@@ -272,16 +272,23 @@
 
         // 1. คำนวณค่าเริ่มต้นจาก URL ทันที (ไม่ต้องรอ App Init)
         const urlParams = new URLSearchParams(window.location.search);
-        const urlAction = urlParams.get('action');
+        const urlAction = (urlParams.get('action') || '').toLowerCase();
 
-        // กำหนด View เริ่มต้น
+        // กำหนด View เริ่มต้น (Case-insensitive)
         let initialView = 'Landing';
-        if (urlAction === 'Genlink') initialView = 'Genlink';
-        if (urlAction === 'Check') initialView = 'Check';
-        if (urlAction === 'Find') initialView = 'Find';
+        if (urlAction === 'genlink') initialView = 'Genlink';
+        if (urlAction === 'check') initialView = 'Check';
+        if (urlAction === 'find') initialView = 'Find';
 
-        // กำหนดว่าต้องโหลดข้อมูลไหม? (Check และ Landing ไม่ต้องโหลด)
-        const initialLoading = (initialView === 'Genlink' || initialView === 'Find');
+        // เช็ค Cache ทันที (เพื่อให้ isLoading เป็น false ตั้งแต่ต้น)
+        const cachedData = localStorage.getItem('student_cache_v1');
+        const cacheTime = localStorage.getItem('student_cache_time');
+        const ONE_DAY = 24 * 60 * 60 * 1000;
+        const hasValidCache = cachedData && cacheTime && (Date.now() - parseInt(cacheTime) < ONE_DAY);
+
+        // กำหนดว่าต้องโหลดข้อมูลไหม? (Genlink/Find และไม่มี Cache)
+        const initialLoading = (initialView === 'Genlink' || initialView === 'Find') && !hasValidCache;
+        const initialStudents = hasValidCache ? JSON.parse(cachedData) : [];
 
         function nongApp() {
             return {
@@ -290,7 +297,7 @@
                 isLoading: initialLoading,
 
                 search: '',
-                students: [],
+                students: initialStudents,
                 selectedStudent: null,
                 // Check mode จะไม่เปิด modal ทันที รอให้ initApp() เปิดแทน
                 showModal: false,
@@ -353,19 +360,14 @@
                 },
 
                 async getData() {
-                    // 1. ลองดึงจากเครื่องตัวเองก่อน (เร็วจี๋)
-                    const cachedData = localStorage.getItem('student_cache_v1');
-                    const cacheTime = localStorage.getItem('student_cache_time');
-                    const ONE_DAY = 24 * 60 * 60 * 1000; // อายุ Cache 1 วัน
-
-                    if (cachedData && cacheTime && (Date.now() - cacheTime < ONE_DAY)) {
-                        this.students = JSON.parse(cachedData);
+                    // ถ้ามีข้อมูลตั้งต้นมาจาก Cache แล้ว (จากตัวแปร initialStudents) ก็ไม่ต้องทำอะไร
+                    if (this.students.length > 0) {
+                        console.log("Using students from initial cache");
                         this.isLoading = false;
-                        console.log("Loaded from Local Cache");
-                        return; // จบงานเลย ไม่ต้องโหลดเน็ต
+                        return;
                     }
 
-                    // 2. ถ้าไม่มี Cache ค่อยไปดึงจาก CSV (Publish to web)
+                    // ถ้าไม่มี Cache ค่อยไปดึงจาก CSV (Publish to web)
                     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTfybU2HgtAKCxICUV0HzBIGHgIxUtrblVKM9siUWU9GCzWD7ugl2inTW7MitErRluZgfQTHSAJedcW/pub?gid=1381895729&single=true&output=csv";
 
                     try {
