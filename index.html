@@ -12,6 +12,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
         ::-webkit-scrollbar {
             width: 0px;
             background: transparent;
@@ -36,7 +40,7 @@
 
 <body class="bg-slate-50 min-h-screen font-sans safe-area-inset-bottom overflow-hidden">
 
-    <div x-data="nongApp()" x-init="initApp()" class="h-screen flex flex-col">
+    <div x-data="nongApp()" x-init="initApp()" x-cloak class="h-screen flex flex-col">
 
         <!-- Student Selection UI (Visible for Main and Find views) -->
         <div x-show="view === 'Main' || view === 'Find'" class="flex flex-col h-full">
@@ -83,6 +87,12 @@
                     <p>ไม่พบรายชื่อ</p>
                 </div>
             </div>
+        </div>
+
+        <!-- Loading Screen for Check Mode -->
+        <div x-show="view === 'Check' && isLoading" class="flex flex-col items-center justify-center h-screen">
+            <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
+            <p class="text-slate-600 font-medium">กำลังโหลดข้อมูล...</p>
         </div>
 
         <!-- Background Overlay for Modal -->
@@ -276,9 +286,10 @@
                     const action = urlParams.get('action') || '';
                     console.log("Action from URL:", action);
 
+                    // Set view immediately to prevent flicker
                     if (action === 'Check') {
                         this.view = 'Check';
-                        this.showModal = true;
+                        // Don't open modal yet - wait for data to load
                     } else if (action === 'Find') {
                         this.view = 'Find';
                     } else {
@@ -320,6 +331,11 @@
                             this.students = data;
                             this.isLoading = false;
                             console.log('Students loaded:', data.length);
+
+                            // Open modal for Check mode after data loads
+                            if (this.view === 'Check') {
+                                this.showModal = true;
+                            }
                         })
                         .catch(err => {
                             console.error('Failed to load students (attempt ' + (retryCount + 1) + '):', err);
