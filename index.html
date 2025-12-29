@@ -36,7 +36,7 @@
 
 <body class="bg-slate-50 min-h-screen font-sans safe-area-inset-bottom overflow-hidden">
 
-   <div x-data="nongApp()" x-init="initApp()" x-cloak class="h-screen flex flex-col">
+    <div x-data="nongApp()" x-init="initApp()" x-cloak class="h-screen flex flex-col">
 
         <!-- Initial Loading Screen (shown when view is empty) -->
         <div x-show="view === ''" class="flex flex-col items-center justify-center h-screen bg-slate-50">
@@ -56,8 +56,8 @@
                     <!-- Loading indicator inside search box -->
                     <template x-if="isLoading">
                         <div class="w-full pl-11 pr-10 py-3 rounded-xl bg-slate-100 flex items-center">
-                            <i class="fa-solid fa-circle-notch fa-spin text-slate-400 mr-2"></i>
-                            <span class="text-slate-400">กำลังโหลด...</span>
+                            <i class="fa-solid fa-circle-notch fa-spin text-slate-400 absolute left-4"></i>
+                            <span class="text-slate-400 text-lg">กำลังโหลด...</span>
                         </div>
                     </template>
 
@@ -245,320 +245,320 @@
 
     </div>
 
-  
-<script>
-    // API Configuration
-    const API_URL = 'https://script.google.com/macros/s/AKfycbynXlHluO0fRNH8RHmt9uRiny1XZiu3S3jXr4ehE5zi1QhW-AbgwZRSZyZHVsGUkiLV-g/exec';
 
-    // 1. คำนวณค่าเริ่มต้นจาก URL ทันที (ไม่ต้องรอ App Init)
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlAction = urlParams.get('action');
-    
-    // กำหนด View เริ่มต้น
-    let initialView = 'Main';
-    if (urlAction === 'Check') initialView = 'Check';
-    if (urlAction === 'Find') initialView = 'Find';
+    <script>
+        // API Configuration
+        const API_URL = 'https://script.google.com/macros/s/AKfycbynXlHluO0fRNH8RHmt9uRiny1XZiu3S3jXr4ehE5zi1QhW-AbgwZRSZyZHVsGUkiLV-g/exec';
 
-    // กำหนดว่าต้องโหลดข้อมูลไหม? (Check ไม่ต้องโหลด)
-    const initialLoading = (initialView !== 'Check'); 
+        // 1. คำนวณค่าเริ่มต้นจาก URL ทันที (ไม่ต้องรอ App Init)
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlAction = urlParams.get('action');
 
-    function nongApp() {
-        return {
-            // 2. ยัดค่าเริ่มต้นใส่ตัวแปรเลย (เปิดมาปุ๊บ เป็นหน้านั้นปั๊บ ไม่กระพริบ)
-            view: initialView, 
-            isLoading: initialLoading, 
-            
-            search: '',
-            students: [],
-            selectedStudent: null,
-            // ถ้าเป็น Check ให้เปิด Modal เลย
-            showModal: (initialView === 'Check'),
-            result: null,
-            generatedCommand: null,
-            copyButtonText: 'Copy',
-            liffReady: false,
-            isInLineClient: false,
+        // กำหนด View เริ่มต้น
+        let initialView = 'Main';
+        if (urlAction === 'Check') initialView = 'Check';
+        if (urlAction === 'Find') initialView = 'Find';
 
-            // Date Form States
-            tempDate: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
-            tempEndDate: null,
-            selectedPeriods: [],
-            isRangeMode: false,
+        // กำหนดว่าต้องโหลดข้อมูลไหม? (Check ไม่ต้องโหลด)
+        const initialLoading = (initialView !== 'Check');
 
-            config: { strictMode: true },
+        function nongApp() {
+            return {
+                // 2. ยัดค่าเริ่มต้นใส่ตัวแปรเลย (เปิดมาปุ๊บ เป็นหน้านั้นปั๊บ ไม่กระพริบ)
+                view: initialView,
+                isLoading: initialLoading,
 
-            clinicSchedule: {
-                "Monday": ["Morning", "Afternoon"],
-                "Tuesday": ["Afternoon", "Evening"],
-                "Wednesday": ["Afternoon"],
-                "Thursday": ["Afternoon", "Evening"],
-                "Friday": ["Morning", "Afternoon"]
-            },
+                search: '',
+                students: [],
+                selectedStudent: null,
+                // ถ้าเป็น Check ให้เปิด Modal เลย
+                showModal: (initialView === 'Check'),
+                result: null,
+                generatedCommand: null,
+                copyButtonText: 'Copy',
+                liffReady: false,
+                isInLineClient: false,
 
-            periodOptions: [
-                { val: 'Morning', label: 'Morning', icon: 'fa-regular fa-sun' },
-                { val: 'Afternoon', label: 'Afternoon', icon: 'fa-solid fa-cloud-sun' },
-                { val: 'Evening', label: 'Evening', icon: 'fa-solid fa-moon' },
-            ],
+                // Date Form States
+                tempDate: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
+                tempEndDate: null,
+                selectedPeriods: [],
+                isRangeMode: false,
 
-            initApp() {
-                // ไม่ต้องอ่าน URL ซ้ำแล้ว ใช้ค่า initialView ได้เลย
+                config: { strictMode: true },
 
-                // 3. Initialize LIFF (ทำขนานไป)
-                this.initLiff();
+                clinicSchedule: {
+                    "Monday": ["Morning", "Afternoon"],
+                    "Tuesday": ["Afternoon", "Evening"],
+                    "Wednesday": ["Afternoon"],
+                    "Thursday": ["Afternoon", "Evening"],
+                    "Friday": ["Morning", "Afternoon"]
+                },
 
-                // 4. โหลดข้อมูลเฉพาะ Mode ที่จำเป็น (Check ข้ามไปเลย)
-                if (this.view !== 'Check') {
-                    this.getData();
-                } else {
-                    console.log("Check Mode: Skipped Data Loading");
-                }
-            },
+                periodOptions: [
+                    { val: 'Morning', label: 'Morning', icon: 'fa-regular fa-sun' },
+                    { val: 'Afternoon', label: 'Afternoon', icon: 'fa-solid fa-cloud-sun' },
+                    { val: 'Evening', label: 'Evening', icon: 'fa-solid fa-moon' },
+                ],
 
-            initLiff() {
-                liff.init({ liffId: '2008789653-1d4rx1nO' })
-                    .then(() => {
-                        console.log('LIFF initialized');
-                        this.liffReady = true;
-                        this.isInLineClient = liff.isInClient();
-                    })
-                    .catch((err) => {
-                        console.error('LIFF init failed', err);
-                    });
-            },
+                initApp() {
+                    // ไม่ต้องอ่าน URL ซ้ำแล้ว ใช้ค่า initialView ได้เลย
 
-            getData() {
-                this.loadStudentsWithRetry(0);
-            },
+                    // 3. Initialize LIFF (ทำขนานไป)
+                    this.initLiff();
 
-            loadStudentsWithRetry(retryCount) {
-                const maxRetries = 2;
-                fetch(API_URL)
-                    .then(response => response.json())
-                    .then(data => {
-                        this.students = data;
-                        this.isLoading = false;
-                        console.log('Students loaded:', data.length);
-                    })
-                    .catch(err => {
-                        console.error('Failed to load students:', err);
-                        if (retryCount < maxRetries) {
-                            setTimeout(() => this.loadStudentsWithRetry(retryCount + 1), 1000);
-                        } else {
+                    // 4. โหลดข้อมูลเฉพาะ Mode ที่จำเป็น (Check ข้ามไปเลย)
+                    if (this.view !== 'Check') {
+                        this.getData();
+                    } else {
+                        console.log("Check Mode: Skipped Data Loading");
+                    }
+                },
+
+                initLiff() {
+                    liff.init({ liffId: '2008789653-1d4rx1nO' })
+                        .then(() => {
+                            console.log('LIFF initialized');
+                            this.liffReady = true;
+                            this.isInLineClient = liff.isInClient();
+                        })
+                        .catch((err) => {
+                            console.error('LIFF init failed', err);
+                        });
+                },
+
+                getData() {
+                    this.loadStudentsWithRetry(0);
+                },
+
+                loadStudentsWithRetry(retryCount) {
+                    const maxRetries = 2;
+                    fetch(API_URL)
+                        .then(response => response.json())
+                        .then(data => {
+                            this.students = data;
                             this.isLoading = false;
-                            alert('ไม่สามารถโหลดข้อมูลนักศึกษาได้');
-                        }
-                    });
-            },
+                            console.log('Students loaded:', data.length);
+                        })
+                        .catch(err => {
+                            console.error('Failed to load students:', err);
+                            if (retryCount < maxRetries) {
+                                setTimeout(() => this.loadStudentsWithRetry(retryCount + 1), 1000);
+                            } else {
+                                this.isLoading = false;
+                                alert('ไม่สามารถโหลดข้อมูลนักศึกษาได้');
+                            }
+                        });
+                },
 
-            // --- ส่วน Logic อื่นๆ เหมือนเดิม ---
-            get filteredStudents() {
-                if (this.search === '') return [];
-                const q = this.search.toString().toLowerCase();
-                return this.students.filter(s => {
-                    const id = s.id ? s.id.toString().toLowerCase() : '';
-                    const name = s.name ? s.name.toString().toLowerCase() : '';
-                    return id.includes(q) || name.includes(q);
-                }).slice(0, 50);
-            },
-            selectStudent(student) {
-                this.selectedStudent = student;
-                this.resetForm();
-                this.showModal = true;
-                this.autoSelectPeriod(this.tempDate);
-            },
-            closeModal() {
-                if (this.view === 'Check') {
-                    this.showModal = false;
-                } else {
-                    this.selectedStudent = null;
-                    this.showModal = false;
-                }
-                this.result = null;
-            },
-            resetForm() {
-                this.selectedPeriods = [];
-                this.isRangeMode = false;
-                this.tempEndDate = null;
-                this.result = null;
-            },
-            onStartDateChange() {
-                this.selectedPeriods = [];
-                if (this.isRangeMode) {
-                    this.tempEndDate = this.getNextWorkingDay(this.tempDate, 3);
-                } else {
-                    this.tempEndDate = null;
+                // --- ส่วน Logic อื่นๆ เหมือนเดิม ---
+                get filteredStudents() {
+                    if (this.search === '') return [];
+                    const q = this.search.toString().toLowerCase();
+                    return this.students.filter(s => {
+                        const id = s.id ? s.id.toString().toLowerCase() : '';
+                        const name = s.name ? s.name.toString().toLowerCase() : '';
+                        return id.includes(q) || name.includes(q);
+                    }).slice(0, 50);
+                },
+                selectStudent(student) {
+                    this.selectedStudent = student;
+                    this.resetForm();
+                    this.showModal = true;
                     this.autoSelectPeriod(this.tempDate);
-                }
-            },
-            toggleRangeMode() {
-                this.isRangeMode = !this.isRangeMode;
-                this.selectedPeriods = [];
-                if (this.isRangeMode) {
-                    this.tempEndDate = this.getNextWorkingDay(this.tempDate, 3);
-                } else {
+                },
+                closeModal() {
+                    if (this.view === 'Check') {
+                        this.showModal = false;
+                    } else {
+                        this.selectedStudent = null;
+                        this.showModal = false;
+                    }
+                    this.result = null;
+                },
+                resetForm() {
+                    this.selectedPeriods = [];
+                    this.isRangeMode = false;
                     this.tempEndDate = null;
-                    this.autoSelectPeriod(this.tempDate);
-                }
-            },
-            togglePeriod(val) {
-                if (this.view === 'Main') {
-                    if (this.selectedPeriods.includes(val)) {
-                        this.selectedPeriods = [];
+                    this.result = null;
+                },
+                onStartDateChange() {
+                    this.selectedPeriods = [];
+                    if (this.isRangeMode) {
+                        this.tempEndDate = this.getNextWorkingDay(this.tempDate, 3);
                     } else {
-                        this.selectedPeriods = [val];
+                        this.tempEndDate = null;
+                        this.autoSelectPeriod(this.tempDate);
                     }
-                } else {
-                    const idx = this.selectedPeriods.indexOf(val);
-                    if (idx > -1) {
-                        this.selectedPeriods.splice(idx, 1);
+                },
+                toggleRangeMode() {
+                    this.isRangeMode = !this.isRangeMode;
+                    this.selectedPeriods = [];
+                    if (this.isRangeMode) {
+                        this.tempEndDate = this.getNextWorkingDay(this.tempDate, 3);
                     } else {
-                        this.selectedPeriods.push(val);
+                        this.tempEndDate = null;
+                        this.autoSelectPeriod(this.tempDate);
                     }
-                }
-            },
-            isSubmitDisabled() {
-                if (this.isRangeMode) return !this.tempEndDate;
-                if (this.view === 'Main') return this.selectedPeriods.length === 0 || (this.config.strictMode && !this.checkSchedule(this.tempDate, this.selectedPeriods[0]));
-                if (this.selectedPeriods.length > 0) return this.config.strictMode && !this.selectedPeriods.every(p => this.checkSchedule(this.tempDate, p));
-                return false;
-            },
-            getDayName(dateStr) {
-                if (!dateStr) return '---';
-                const date = new Date(dateStr);
-                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                return days[date.getUTCDay()];
-            },
-            isWeekend(dateStr) {
-                if (!dateStr) return false;
-                const date = new Date(dateStr);
-                const day = date.getUTCDay();
-                return day === 0 || day === 6;
-            },
-            checkSchedule(dateStr, period) {
-                if (!dateStr || !period) return false;
-                const date = new Date(dateStr);
-                const daysEN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                const dayName = daysEN[date.getUTCDay()];
-                const allowed = this.clinicSchedule[dayName] || [];
-                return allowed.includes(period);
-            },
-            autoSelectPeriod(dateStr) {
-                if (!this.config.strictMode || !dateStr) return;
-                const date = new Date(dateStr);
-                const daysEN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                const dayName = daysEN[date.getUTCDay()];
-                const allowed = this.clinicSchedule[dayName] || [];
-                if (allowed.length === 1) {
-                    this.selectedPeriods = [allowed[0]];
-                }
-            },
-            getNextWorkingDay(dateStr, days) {
-                if (!dateStr) return '';
-                let current = new Date(dateStr);
-                let added = 0;
-                while (added < days) {
-                    current.setDate(current.getDate() + 1);
-                    if (current.getDay() !== 0 && current.getDay() !== 6) { added++; }
-                }
-                return current.toISOString().split('T')[0];
-            },
-            handleMainAction() {
-                if (this.view === 'Main') {
-                    this.generateLink(this.selectedStudent, this.tempDate, this.selectedPeriods[0]);
-                } else {
-                    this.submitCheck(this.selectedStudent, this.tempDate, this.tempEndDate, this.selectedPeriods);
-                    this.showModal = false;
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-            },
-            submitCheck(student, startDate, endDate, selectedPeriods) {
-                let command = '';
-                if (this.view === 'Find') {
-                    command = 'หาเดลี่';
-                    if (student) command += ' ' + student.name;
-                } else {
-                    command = 'เช็คเดลี่';
-                }
-                if (this.isRangeMode && endDate && endDate >= startDate) {
-                    command += ' ' + this.formatThaiDateRange(startDate, endDate);
-                } else {
-                    command += ' ' + this.formatThaiDate(startDate);
-                }
-                if (selectedPeriods.length > 0) {
-                    command += ' คาบ ' + selectedPeriods.join(' ');
-                }
-                this.sendMessageToLine(command);
-            },
-            sendMessageToLine(message) {
-                if (!this.liffReady) {
-                    this.generatedCommand = message;
-                    this.copyButtonText = 'Copy';
-                    return;
-                }
-                if (!this.isInLineClient) {
-                    this.generatedCommand = message;
-                    this.copyButtonText = 'Copy';
-                    return;
-                }
-                liff.sendMessages([{ type: 'text', text: message }])
-                    .then(() => liff.closeWindow())
-                    .catch((err) => {
-                        console.error('Failed to send message', err);
+                },
+                togglePeriod(val) {
+                    if (this.view === 'Main') {
+                        if (this.selectedPeriods.includes(val)) {
+                            this.selectedPeriods = [];
+                        } else {
+                            this.selectedPeriods = [val];
+                        }
+                    } else {
+                        const idx = this.selectedPeriods.indexOf(val);
+                        if (idx > -1) {
+                            this.selectedPeriods.splice(idx, 1);
+                        } else {
+                            this.selectedPeriods.push(val);
+                        }
+                    }
+                },
+                isSubmitDisabled() {
+                    if (this.isRangeMode) return !this.tempEndDate;
+                    if (this.view === 'Main') return this.selectedPeriods.length === 0 || (this.config.strictMode && !this.checkSchedule(this.tempDate, this.selectedPeriods[0]));
+                    if (this.selectedPeriods.length > 0) return this.config.strictMode && !this.selectedPeriods.every(p => this.checkSchedule(this.tempDate, p));
+                    return false;
+                },
+                getDayName(dateStr) {
+                    if (!dateStr) return '---';
+                    const date = new Date(dateStr);
+                    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    return days[date.getUTCDay()];
+                },
+                isWeekend(dateStr) {
+                    if (!dateStr) return false;
+                    const date = new Date(dateStr);
+                    const day = date.getUTCDay();
+                    return day === 0 || day === 6;
+                },
+                checkSchedule(dateStr, period) {
+                    if (!dateStr || !period) return false;
+                    const date = new Date(dateStr);
+                    const daysEN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    const dayName = daysEN[date.getUTCDay()];
+                    const allowed = this.clinicSchedule[dayName] || [];
+                    return allowed.includes(period);
+                },
+                autoSelectPeriod(dateStr) {
+                    if (!this.config.strictMode || !dateStr) return;
+                    const date = new Date(dateStr);
+                    const daysEN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    const dayName = daysEN[date.getUTCDay()];
+                    const allowed = this.clinicSchedule[dayName] || [];
+                    if (allowed.length === 1) {
+                        this.selectedPeriods = [allowed[0]];
+                    }
+                },
+                getNextWorkingDay(dateStr, days) {
+                    if (!dateStr) return '';
+                    let current = new Date(dateStr);
+                    let added = 0;
+                    while (added < days) {
+                        current.setDate(current.getDate() + 1);
+                        if (current.getDay() !== 0 && current.getDay() !== 6) { added++; }
+                    }
+                    return current.toISOString().split('T')[0];
+                },
+                handleMainAction() {
+                    if (this.view === 'Main') {
+                        this.generateLink(this.selectedStudent, this.tempDate, this.selectedPeriods[0]);
+                    } else {
+                        this.submitCheck(this.selectedStudent, this.tempDate, this.tempEndDate, this.selectedPeriods);
+                        this.showModal = false;
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                },
+                submitCheck(student, startDate, endDate, selectedPeriods) {
+                    let command = '';
+                    if (this.view === 'Find') {
+                        command = 'หาเดลี่';
+                        if (student) command += ' ' + student.name;
+                    } else {
+                        command = 'เช็คเดลี่';
+                    }
+                    if (this.isRangeMode && endDate && endDate >= startDate) {
+                        command += ' ' + this.formatThaiDateRange(startDate, endDate);
+                    } else {
+                        command += ' ' + this.formatThaiDate(startDate);
+                    }
+                    if (selectedPeriods.length > 0) {
+                        command += ' คาบ ' + selectedPeriods.join(' ');
+                    }
+                    this.sendMessageToLine(command);
+                },
+                sendMessageToLine(message) {
+                    if (!this.liffReady) {
                         this.generatedCommand = message;
                         this.copyButtonText = 'Copy';
+                        return;
+                    }
+                    if (!this.isInLineClient) {
+                        this.generatedCommand = message;
+                        this.copyButtonText = 'Copy';
+                        return;
+                    }
+                    liff.sendMessages([{ type: 'text', text: message }])
+                        .then(() => liff.closeWindow())
+                        .catch((err) => {
+                            console.error('Failed to send message', err);
+                            this.generatedCommand = message;
+                            this.copyButtonText = 'Copy';
+                        });
+                },
+                generateLink(student, date, period) {
+                    const baseUrl = "https://docs.google.com/forms/d/e/1FAIpQLScJpI49cN6TUtWco4a9PKSwNEilx-qbe6wBYdMx37DQrvmduA/viewform";
+                    const isRedYellow = period === 'Red or Yellow card only';
+                    const operatorValue = isRedYellow ? 'Red or Yellow card only' : 'Operator';
+                    const params = new URLSearchParams({
+                        "usp": "pp_url", "entry.905769814": date, "entry.1808664990": period, "entry.2046402958": student.id, "entry.344185347": student.name, "entry.603124447": operatorValue,
+                        "entry.201182270": "Satisfy", "entry.337720537": "N/A", "entry.597943525": "Satisfy", "entry.811559512": "S", "entry.1524092372": "S", "entry.40188145": "S", "entry.535898240": "S", "entry.705454010": "S", "entry.2064974940": "S", "entry.1469137250": "Satisfy", "entry.1831314448": "Satisfy", "entry.1656405206": "S", "entry.1015640385": "S", "entry.1731175069": "Satisfy", "entry.405379199": "Satisfy", "entry.1449301261": "S", "entry.913337877": "Satisfy", "entry.597097501": "S", "entry.1167491612": "S", "entry.158309502": "S", "entry.194704758": "Satisfy", "entry.928325079": "Satisfy", "entry.637114186": "S", "entry.1684415897": "S", "entry.1614402636": "S", "entry.1552596155": "Satisfy", "entry.1535404200": "Satisfy", "entry.563136944": "S", "entry.1051495247": "S", "entry.143354819": "Satisfy"
                     });
-            },
-            generateLink(student, date, period) {
-                const baseUrl = "https://docs.google.com/forms/d/e/1FAIpQLScJpI49cN6TUtWco4a9PKSwNEilx-qbe6wBYdMx37DQrvmduA/viewform";
-                const isRedYellow = period === 'Red or Yellow card only';
-                const operatorValue = isRedYellow ? 'Red or Yellow card only' : 'Operator';
-                const params = new URLSearchParams({
-                    "usp": "pp_url", "entry.905769814": date, "entry.1808664990": period, "entry.2046402958": student.id, "entry.344185347": student.name, "entry.603124447": operatorValue,
-                    "entry.201182270": "Satisfy", "entry.337720537": "N/A", "entry.597943525": "Satisfy", "entry.811559512": "S", "entry.1524092372": "S", "entry.40188145": "S", "entry.535898240": "S", "entry.705454010": "S", "entry.2064974940": "S", "entry.1469137250": "Satisfy", "entry.1831314448": "Satisfy", "entry.1656405206": "S", "entry.1015640385": "S", "entry.1731175069": "Satisfy", "entry.405379199": "Satisfy", "entry.1449301261": "S", "entry.913337877": "Satisfy", "entry.597097501": "S", "entry.1167491612": "S", "entry.158309502": "S", "entry.194704758": "Satisfy", "entry.928325079": "Satisfy", "entry.637114186": "S", "entry.1684415897": "S", "entry.1614402636": "S", "entry.1552596155": "Satisfy", "entry.1535404200": "Satisfy", "entry.563136944": "S", "entry.1051495247": "S", "entry.143354819": "Satisfy"
-                });
-                window.location.href = `${baseUrl}?${params.toString()}`;
-            },
-            formatThaiDate(dateStr) {
-                if (!dateStr) return '';
-                const date = new Date(dateStr);
-                const day = date.getDate();
-                const monthNames = ['มค', 'กพ', 'มีค', 'เมย', 'พค', 'มิย', 'กค', 'สค', 'กย', 'ตค', 'พย', 'ธค'];
-                const month = monthNames[date.getMonth()];
-                return `${day} ${month}`;
-            },
-            formatThaiDateRange(startDateStr, endDateStr) {
-                if (!startDateStr || !endDateStr) return '';
-                const start = this.formatThaiDate(startDateStr);
-                const end = this.formatThaiDate(endDateStr);
-                return `${start} - ${end}`;
-            },
-            copyToClipboard(text) {
-                if (!text) return;
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text).then(() => {
+                    window.location.href = `${baseUrl}?${params.toString()}`;
+                },
+                formatThaiDate(dateStr) {
+                    if (!dateStr) return '';
+                    const date = new Date(dateStr);
+                    const day = date.getDate();
+                    const monthNames = ['มค', 'กพ', 'มีค', 'เมย', 'พค', 'มิย', 'กค', 'สค', 'กย', 'ตค', 'พย', 'ธค'];
+                    const month = monthNames[date.getMonth()];
+                    return `${day} ${month}`;
+                },
+                formatThaiDateRange(startDateStr, endDateStr) {
+                    if (!startDateStr || !endDateStr) return '';
+                    const start = this.formatThaiDate(startDateStr);
+                    const end = this.formatThaiDate(endDateStr);
+                    return `${start} - ${end}`;
+                },
+                copyToClipboard(text) {
+                    if (!text) return;
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(text).then(() => {
+                            this.copyButtonText = '✓ Copied!';
+                            setTimeout(() => { this.copyButtonText = 'Copy'; }, 2000);
+                        }).catch(err => { this.fallbackCopy(text); });
+                    } else { this.fallbackCopy(text); }
+                },
+                fallbackCopy(text) {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
                         this.copyButtonText = '✓ Copied!';
                         setTimeout(() => { this.copyButtonText = 'Copy'; }, 2000);
-                    }).catch(err => { this.fallbackCopy(text); });
-                } else { this.fallbackCopy(text); }
-            },
-            fallbackCopy(text) {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                textarea.select();
-                try {
-                    document.execCommand('copy');
-                    this.copyButtonText = '✓ Copied!';
-                    setTimeout(() => { this.copyButtonText = 'Copy'; }, 2000);
-                } catch (err) { console.error('Copy failed:', err); }
-                document.body.removeChild(textarea);
+                    } catch (err) { console.error('Copy failed:', err); }
+                    document.body.removeChild(textarea);
+                }
             }
         }
-    }
-</script>    
+    </script>
 </body>
 
 </html>
