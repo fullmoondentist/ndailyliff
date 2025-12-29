@@ -10,6 +10,9 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
 
     <style>
         ::-webkit-scrollbar {
@@ -30,6 +33,25 @@
         .slide-up-enter-to,
         .slide-up-leave-from {
             transform: translateY(0);
+        }
+
+        /* Flatpickr FlyonUI Style */
+        .flatpickr-calendar {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            border-radius: 1rem;
+            border: 1px solid #f1f5f9;
+            padding: 0.5rem;
+        }
+
+        .flatpickr-day.selected {
+            background: #2563eb !important;
+            border-color: #2563eb !important;
+            border-radius: 0.5rem;
+        }
+
+        .flatpickr-day:hover {
+            background: #f1f5f9 !important;
+            border-radius: 0.5rem;
         }
     </style>
 </head>
@@ -155,7 +177,8 @@
                 <!-- Quick Range Badges (Tiny & Multi-color) -->
                 <div x-show="view !== 'Genlink'" class="flex flex-wrap gap-2 mb-6">
                     <button @click="setQuickRange('last_2_wks')"
-                        class="bg-red-50 border border-red-100 text-red-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-red-100 transition-all active:scale-95 whitespace-nowrap">2 Wks</button>
+                        class="bg-red-50 border border-red-100 text-red-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-red-100 transition-all active:scale-95 whitespace-nowrap">2
+                        Wks</button>
                     <button @click="setQuickRange('last_wk')"
                         class="bg-purple-50 border border-purple-100 text-purple-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-purple-100 transition-all active:scale-95 whitespace-nowrap">Last
                         Wk</button>
@@ -177,12 +200,8 @@
                     <div class="pl-3 pr-2 text-slate-400">
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
-                    <div :class="isWeekend(tempDate) ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'"
-                        class="text-sm font-bold px-2 py-1 rounded mr-2 min-w-[3rem] text-center transition-colors duration-200"
-                        x-text="getDayName(tempDate)">
-                    </div>
-                    <input type="date" x-model="tempDate" @change="onStartDateChange()"
-                        class="bg-transparent w-full text-slate-700 font-bold text-lg outline-none p-2 h-12">
+                    <input type="text" id="datePicker1" x-ref="datePicker1" readonly
+                        class="bg-transparent w-full text-slate-700 font-bold text-lg outline-none p-2 h-12 cursor-pointer">
                 </div>
 
                 <!-- Range Controls (Compact Switcher & Arrow) -->
@@ -212,12 +231,8 @@
                     <div class="pl-3 pr-2 text-slate-400">
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
-                    <div :class="isWeekend(tempEndDate) ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'"
-                        class="text-sm font-bold px-2 py-1 rounded mr-2 min-w-[3rem] text-center transition-colors duration-200"
-                        x-text="getDayName(tempEndDate)">
-                    </div>
-                    <input type="date" x-model="tempEndDate" :min="tempDate"
-                        class="bg-transparent w-full text-slate-700 font-bold text-lg outline-none p-2 h-12">
+                    <input type="text" id="datePicker2" x-ref="datePicker2" readonly
+                        class="bg-transparent w-full text-slate-700 font-bold text-lg outline-none p-2 h-12 cursor-pointer">
                 </div>
 
                 <!-- Period Grid -->
@@ -336,6 +351,8 @@
                 copyButtonText: 'Copy',
                 liffReady: false,
                 isInLineClient: false,
+                fp1: null,
+                fp2: null,
 
                 // Date Form States
                 tempDate: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
@@ -360,7 +377,8 @@
                 ],
 
                 initApp() {
-                    // ไม่ต้องอ่าน URL ซ้ำแล้ว ใช้ค่า initialView ได้เลย
+                    // Initialize Flatpickr
+                    this.initFlatpickr();
 
                     // 3. Initialize LIFF (ทำขนานไป)
                     this.initLiff();
@@ -387,6 +405,28 @@
                         .catch((err) => {
                             console.error('LIFF init failed', err);
                         });
+                },
+
+                initFlatpickr() {
+                    this.fp1 = flatpickr(this.$refs.datePicker1, {
+                        locale: "th",
+                        dateFormat: "D d M Y",
+                        defaultDate: this.tempDate,
+                        disableMobile: "true",
+                        onChange: (selectedDates, dateStr, instance) => {
+                            this.tempDate = instance.formatDate(selectedDates[0], "Y-m-d");
+                            this.onStartDateChange();
+                        }
+                    });
+                    this.fp2 = flatpickr(this.$refs.datePicker2, {
+                        locale: "th",
+                        dateFormat: "D d M Y",
+                        defaultDate: this.tempEndDate,
+                        disableMobile: "true",
+                        onChange: (selectedDates, dateStr, instance) => {
+                            this.tempEndDate = instance.formatDate(selectedDates[0], "Y-m-d");
+                        }
+                    });
                 },
 
                 async getData() {
@@ -473,6 +513,7 @@
                         this.tempDate = this.formatISO(today);
                         this.tempEndDate = null;
                         this.selectedPeriods = [];
+                        if (this.fp1) this.fp1.setDate(this.tempDate);
                         return;
                     }
 
@@ -499,6 +540,10 @@
                     this.tempDate = this.formatISO(start);
                     this.tempEndDate = this.formatISO(end);
                     this.selectedPeriods = [];
+
+                    // Update Flatpickr
+                    if (this.fp1) this.fp1.setDate(this.tempDate);
+                    if (this.fp2) this.fp2.setDate(this.tempEndDate);
                 },
                 formatISO(date) {
                     return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().split('T')[0];
@@ -507,6 +552,7 @@
                     this.selectedPeriods = [];
                     if (this.isRangeMode) {
                         this.tempEndDate = this.getNextWorkingDay(this.tempDate, 3);
+                        if (this.fp2) this.fp2.setDate(this.tempEndDate);
                     } else {
                         this.tempEndDate = null;
                         this.autoSelectPeriod(this.tempDate);
@@ -517,6 +563,7 @@
                     this.selectedPeriods = [];
                     if (this.isRangeMode) {
                         this.tempEndDate = this.getNextWorkingDay(this.tempDate, 3);
+                        if (this.fp2) this.fp2.setDate(this.tempEndDate); // Added this line
                     } else {
                         this.tempEndDate = null;
                         this.autoSelectPeriod(this.tempDate);
