@@ -165,21 +165,22 @@
                         class="bg-transparent w-full text-slate-700 font-bold text-lg outline-none p-2 h-12">
                 </div>
 
-                <!-- Range Controls (Tab Style) -->
-                <div x-show="view !== 'Genlink' && tempDate" class="flex border-b border-slate-100 mb-6">
-                    <button @click="if(isRangeMode) toggleRangeMode()"
-                        class="flex-1 py-2 text-sm font-bold transition-all relative"
-                        :class="!isRangeMode ? 'text-blue-600' : 'text-slate-400'">
-                        วัน
-                        <div x-show="!isRangeMode" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
-                    </button>
-                    <button @click="if(!isRangeMode) toggleRangeMode()"
-                        class="flex-1 py-2 text-sm font-bold transition-all relative"
-                        :class="isRangeMode ? 'text-blue-600' : 'text-slate-400'">
-                        ช่วง
-                        <div x-show="isRangeMode" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
-                    </button>
+                <!-- Range Controls (Compact Small Switcher) -->
+                <div x-show="view !== 'Genlink' && tempDate" class="mb-4 flex items-center justify-end">
+                    <div class="inline-flex bg-slate-100 p-1 rounded-lg">
+                        <button @click="if(isRangeMode) toggleRangeMode()"
+                            class="px-3 py-1 text-xs font-bold rounded-md transition-all"
+                            :class="!isRangeMode ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'">
+                            วัน
+                        </button>
+                        <button @click="if(!isRangeMode) toggleRangeMode()"
+                            class="px-3 py-1 text-xs font-bold rounded-md transition-all"
+                            :class="isRangeMode ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'">
+                            ช่วง
+                        </button>
+                    </div>
                 </div>
+
 
 
                 <!-- Date Input 2 (Range Mode) -->
