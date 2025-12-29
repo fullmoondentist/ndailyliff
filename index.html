@@ -308,6 +308,12 @@
                 },
 
                 getData() {
+                    this.loadStudentsWithRetry(0);
+                },
+
+                loadStudentsWithRetry(retryCount) {
+                    const maxRetries = 2;
+
                     fetch(API_URL)
                         .then(response => response.json())
                         .then(data => {
@@ -316,9 +322,17 @@
                             console.log('Students loaded:', data.length);
                         })
                         .catch(err => {
-                            console.error('Failed to load students:', err);
-                            this.isLoading = false;
-                            alert('ไม่สามารถโหลดข้อมูลนักศึกษาได้\nกรุณาลองใหม่อีกครั้ง');
+                            console.error('Failed to load students (attempt ' + (retryCount + 1) + '):', err);
+
+                            if (retryCount < maxRetries) {
+                                console.log('Retrying in 1 second...');
+                                setTimeout(() => {
+                                    this.loadStudentsWithRetry(retryCount + 1);
+                                }, 1000);
+                            } else {
+                                this.isLoading = false;
+                                alert('ไม่สามารถโหลดข้อมูลนักศึกษาได้\nกรุณาลองใหม่อีกครั้ง');
+                            }
                         });
                 },
 
