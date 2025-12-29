@@ -271,8 +271,8 @@
                 search: '',
                 students: [],
                 selectedStudent: null,
-                // ถ้าเป็น Check ให้เปิด Modal เลย
-                showModal: (initialView === 'Check'),
+                // ไม่เปิด Modal ทันที - รอ 1 วินาทีใน initApp()
+                showModal: false,
                 result: null,
                 generatedCommand: null,
                 copyButtonText: 'Copy',
@@ -312,6 +312,10 @@
                         this.getData();
                     } else {
                         console.log("Check Mode: Skipped Data Loading");
+                        // รอ 1 วินาทีก่อนเปิด Modal (ให้ animation นุ่มนวล)
+                        setTimeout(() => {
+                            this.showModal = true;
+                        }, 1000);
                     }
                 },
 
