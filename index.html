@@ -333,7 +333,10 @@
                         this.getData();
                     } else if (this.view === 'Check') {
                         console.log("Check Mode: Skipped Data Loading");
-                        this.showModal = true;
+                        // เปิด modal หลัง 1 วินาที
+                        setTimeout(() => {
+                            this.showModal = true;
+                        }, 1000);
                     }
                 },
 
