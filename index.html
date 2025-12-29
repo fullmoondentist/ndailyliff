@@ -165,9 +165,12 @@
                         class="bg-transparent w-full text-slate-700 font-bold text-lg outline-none p-2 h-12">
                 </div>
 
-                <!-- Range Controls (Compact Small Switcher) -->
-                <div x-show="view !== 'Genlink' && tempDate" class="mb-4 flex items-center justify-end">
-                    <div class="inline-flex bg-slate-100 p-1 rounded-lg">
+                <!-- Range Controls (Compact Switcher & Arrow) -->
+                <div x-show="view !== 'Genlink' && tempDate" class="mb-4 relative flex items-center min-h-[32px]">
+                    <div class="absolute inset-0 flex justify-center items-center pointer-events-none">
+                        <i x-show="isRangeMode" class="fa-solid fa-arrow-down text-slate-300 text-sm"></i>
+                    </div>
+                    <div class="ml-auto inline-flex bg-slate-100 p-1 rounded-lg relative z-10">
                         <button @click="if(isRangeMode) toggleRangeMode()"
                             class="px-3 py-1 text-xs font-bold rounded-md transition-all"
                             :class="!isRangeMode ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'">
