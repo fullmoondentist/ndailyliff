@@ -152,23 +152,24 @@
                     </button>
                 </div>
 
-                <!-- Quick Range Badges (Distributed & Multi-color) -->
-                <div x-show="view !== 'Genlink'" class="flex gap-1.5 mb-6 w-full">
+                <!-- Quick Range Badges (Compact & Multi-color) -->
+                <div x-show="view !== 'Genlink'" class="flex flex-wrap gap-2 mb-6">
                     <button @click="setQuickRange('last_2_wks')"
-                        class="flex-1 bg-slate-50 border border-slate-100 text-slate-500 text-xs font-medium py-1 rounded-full hover:bg-slate-100 transition-all active:scale-95 whitespace-nowrap">Last
+                        class="bg-slate-50 border border-slate-100 text-slate-500 text-xs font-medium px-3 py-1 rounded-full hover:bg-slate-100 transition-all active:scale-95 whitespace-nowrap">Last
                         2 Wks</button>
                     <button @click="setQuickRange('last_wk')"
-                        class="flex-1 bg-slate-50 border border-slate-100 text-slate-500 text-xs font-medium py-1 rounded-full hover:bg-slate-100 transition-all active:scale-95 whitespace-nowrap">Last
+                        class="bg-slate-50 border border-slate-100 text-slate-500 text-xs font-medium px-3 py-1 rounded-full hover:bg-slate-100 transition-all active:scale-95 whitespace-nowrap">Last
                         Wk</button>
                     <button @click="setQuickRange('today')"
-                        class="flex-1 bg-blue-50 border border-blue-100 text-blue-600 text-xs font-medium py-1 rounded-full hover:bg-blue-100 transition-all active:scale-95 whitespace-nowrap">Today</button>
+                        class="bg-blue-50 border border-blue-100 text-blue-600 text-xs font-medium px-3 py-1 rounded-full hover:bg-blue-100 transition-all active:scale-95 whitespace-nowrap">Today</button>
                     <button @click="setQuickRange('this_wk')"
-                        class="flex-1 bg-emerald-50 border border-emerald-100 text-emerald-600 text-xs font-medium py-1 rounded-full hover:bg-emerald-100 transition-all active:scale-95 whitespace-nowrap">This
+                        class="bg-emerald-50 border border-emerald-100 text-emerald-600 text-xs font-medium px-3 py-1 rounded-full hover:bg-emerald-100 transition-all active:scale-95 whitespace-nowrap">This
                         Wk</button>
                     <button @click="setQuickRange('this_mo')"
-                        class="flex-1 bg-amber-50 border border-amber-100 text-amber-600 text-xs font-medium py-1 rounded-full hover:bg-amber-100 transition-all active:scale-95 whitespace-nowrap">This
+                        class="bg-amber-50 border border-amber-100 text-amber-600 text-xs font-medium px-3 py-1 rounded-full hover:bg-amber-100 transition-all active:scale-95 whitespace-nowrap">This
                         Mo</button>
                 </div>
+
 
 
 
