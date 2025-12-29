@@ -190,20 +190,24 @@
 
 
                 <!-- Date Input 1 (Start Date) -->
-                <div class="bg-white p-1 rounded-xl border border-slate-100 mb-4 flex items-center">
+                <div class="bg-slate-50 p-1 rounded-xl border border-slate-100 mb-4 flex items-center">
                     <div class="pl-3 pr-2 text-slate-400">
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
                     <input type="text" x-model="tempDate" x-ref="pickerStart"
                         class="bg-transparent w-full text-slate-700 font-bold text-lg outline-none p-2 h-12" x-init="
                             $watch('tempDate', value => { 
-                                if(pickerStart && !isRangeMode) pickerStart.setDate(value, false) 
+                                if(pickerStart && !isRangeMode) {
+                                    pickerStart.setDate(value, false);
+                                    pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
+                                }
                             });
                             pickerStart = flatpickr($refs.pickerStart, {
                                 altInput: true,
                                 altFormat: 'D d M Y',
                                 dateFormat: 'Y-m-d',
                                 mode: isRangeMode ? 'range' : 'single',
+                                defaultDate: tempDate,
                                 disableMobile: true,
                                 onDayCreate: (dObj, dStr, fp, dayElem) => {
                                     if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
@@ -225,6 +229,11 @@
                                     }
                                 }
                             });
+                            // Fix initial display
+                            if (tempDate) {
+                                pickerStart.setDate(tempDate, false);
+                                pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
+                            }
                         ">
                 </div>
 
@@ -377,13 +386,7 @@
                 isInLineClient: false,
 
                 // Date Form States
-                tempDate: (() => {
-                    const today = new Date();
-                    const day = today.getDay(); // 0=Sun, 6=Sat
-                    if (day === 0) today.setDate(today.getDate() - 2); // Sun -> Fri
-                    else if (day === 6) today.setDate(today.getDate() - 1); // Sat -> Fri
-                    return new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-                })(),
+                tempDate: '', // Will be set in initApp
                 tempEndDate: null,
                 pickerStart: null,
                 pickerEnd: null,
@@ -408,6 +411,7 @@
 
                 initApp() {
                     // ไม่ต้องอ่าน URL ซ้ำแล้ว ใช้ค่า initialView ได้เลย
+                    this.tempDate = this.getInitialWorkingDate();
 
                     // 3. Initialize LIFF (ทำขนานไป)
                     this.initLiff();
@@ -647,6 +651,14 @@
                     if (allowed.length === 1) {
                         this.selectedPeriods = [allowed[0]];
                     }
+                },
+                getInitialWorkingDate() {
+                    let d = new Date();
+                    // If today is Sat (6) or Sun (0), move back to Fri (5)
+                    while (d.getDay() === 0 || d.getDay() === 6) {
+                        d.setDate(d.getDate() - 1);
+                    }
+                    return this.formatISO(d);
                 },
                 getNextWorkingDay(dateStr, days) {
                     if (!dateStr) return '';
