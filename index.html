@@ -12,10 +12,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        [x-cloak] {
-            display: none !important;
-        }
-
         ::-webkit-scrollbar {
             width: 0px;
             background: transparent;
@@ -40,7 +36,13 @@
 
 <body class="bg-slate-50 min-h-screen font-sans safe-area-inset-bottom overflow-hidden">
 
-    <div x-data="nongApp()" x-init="initApp()" x-cloak class="h-screen flex flex-col">
+    <div x-data="nongApp()" x-init="initApp()" class="h-screen flex flex-col">
+
+        <!-- Initial Loading Screen (shown when view is empty) -->
+        <div x-show="view === ''" class="flex flex-col items-center justify-center h-screen bg-slate-50">
+            <i class="fa-solid fa-circle-notch fa-spin text-5xl text-blue-600 mb-4"></i>
+            <p class="text-slate-600 font-medium text-lg">กำลังโหลด...</p>
+        </div>
 
         <!-- Student Selection UI (Visible for Main and Find views) -->
         <div x-show="view === 'Main' || view === 'Find'" class="flex flex-col h-full">
@@ -249,7 +251,7 @@
 
         function nongApp() {
             return {
-                view: 'Main', // Main, Check, Find
+                view: '', // Start with empty - will be set after reading URL
                 isLoading: true,
                 search: '',
                 students: [],
