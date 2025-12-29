@@ -37,7 +37,15 @@
         .weekend-blocked {
             pointer-events: none !important;
             opacity: 0.4 !important;
-            background: transparent !important;
+        }
+
+        /* Fix Flatpickr range glitch for weekend cells */
+        .flatpickr-day.weekend-blocked.inRange {
+            background: #f3f4f6 !important;
+            /* Neutral light gray */
+            border-color: transparent !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
         }
     </style>
 </head>
