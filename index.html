@@ -38,19 +38,18 @@
 
     <div x-data="nongApp()" x-init="initApp()" x-cloak class="h-screen flex flex-col">
 
-        <!-- Initial Loading Screen (shown when view is empty) -->
-        <div x-show="view === ''" class="flex flex-col items-center justify-center h-screen bg-slate-50">
-            <i class="fa-solid fa-circle-notch fa-spin text-5xl text-blue-600 mb-4"></i>
-            <p class="text-slate-600 font-medium text-lg">กำลังโหลด...</p>
+        <!-- Landing Page / Empty View (shown when view is default/empty) -->
+        <div x-show="view === 'Landing'" class="flex-1 bg-slate-100 h-screen">
+            <!-- Blank light gray screen -->
         </div>
 
-        <!-- Student Selection UI (Visible for Main and Find views) -->
-        <div x-show="view === 'Main' || view === 'Find'" class="flex flex-col h-full">
+        <!-- Student Selection UI (Visible for Genlink and Find views) -->
+        <div x-show="view === 'Genlink' || view === 'Find'" class="flex flex-col h-full">
             <div class="bg-white px-4 pt-6 pb-4 shadow-sm z-10 shrink-0">
                 <h1 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
-                    <i :class="view === 'Main' ? 'fa-solid fa-pen-to-square' : 'fa-solid fa-search'"
+                    <i :class="view === 'Genlink' ? 'fa-solid fa-pen-to-square' : 'fa-solid fa-search'"
                         class="text-blue-600 mr-2"></i>
-                    <span x-text="view === 'Main' ? 'สร้าง Form กรอกเดลี่' : 'หาเดลี่ นทพ.'"></span>
+                    <span x-text="view === 'Genlink' ? 'สร้าง Form กรอกเดลี่' : 'หาเดลี่ นทพ.'"></span>
                 </h1>
                 <div class="relative">
                     <!-- Loading indicator inside search box -->
@@ -167,7 +166,7 @@
                 </div>
 
                 <!-- Range Controls -->
-                <div x-show="view !== 'Main' && tempDate" class="mb-4 relative flex items-center">
+                <div x-show="view !== 'Genlink' && tempDate" class="mb-4 relative flex items-center">
                     <div class="absolute inset-0 flex justify-center items-center">
                         <i x-show="isRangeMode" class="fa-solid fa-arrow-down text-slate-400 text-sm"></i>
                     </div>
@@ -206,7 +205,8 @@
                     </template>
                 </div>
 
-                <div x-show="view !== 'Main'" class="text-right text-xs text-slate-500 mb-3">ไม่เลือก=เช็คทุกคาบ</div>
+                <div x-show="view !== 'Genlink'" class="text-right text-xs text-slate-500 mb-3">ไม่เลือก=เช็คทุกคาบ
+                </div>
 
                 <!-- Validation Message -->
                 <div class="h-6 mb-3 text-center">
@@ -223,12 +223,12 @@
                 <button @click="handleMainAction()" :disabled="isSubmitDisabled()"
                     :class="isSubmitDisabled() ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg shadow-blue-200 active:scale-[0.98]'"
                     class="w-full py-4 text-lg font-bold rounded-xl transition-all flex items-center justify-center gap-2">
-                    <span x-text="view === 'Main' ? 'กรอกเดลี่' : 'ตรวจสอบ'"></span>
-                    <i :class="view === 'Main' ? 'fa-solid fa-arrow-up-right-from-square' : 'fa-solid fa-check'"></i>
+                    <span x-text="view === 'Genlink' ? 'กรอกเดลี่' : 'ตรวจสอบ'"></span>
+                    <i :class="view === 'Genlink' ? 'fa-solid fa-arrow-up-right-from-square' : 'fa-solid fa-check'"></i>
                 </button>
 
-                <!-- Shortcut for Main Mode -->
-                <div x-show="view === 'Main'" class="mt-4 flex justify-end">
+                <!-- Shortcut for Genlink Mode -->
+                <div x-show="view === 'Genlink'" class="mt-4 flex justify-end">
                     <button @click="generateLink(selectedStudent, tempDate, 'Red or Yellow card only')"
                         class="text-xs text-slate-400 hover:text-red-500 underline decoration-slate-300 hover:decoration-red-300 transition-colors">
                         <i class="fa-solid fa-circle-exclamation mr-1"></i>Red or Yellow card only
@@ -275,12 +275,13 @@
         const urlAction = urlParams.get('action');
 
         // กำหนด View เริ่มต้น
-        let initialView = 'Main';
+        let initialView = 'Landing';
+        if (urlAction === 'Genlink') initialView = 'Genlink';
         if (urlAction === 'Check') initialView = 'Check';
         if (urlAction === 'Find') initialView = 'Find';
 
-        // กำหนดว่าต้องโหลดข้อมูลไหม? (Check ไม่ต้องโหลด)
-        const initialLoading = (initialView !== 'Check');
+        // กำหนดว่าต้องโหลดข้อมูลไหม? (Check และ Landing ไม่ต้องโหลด)
+        const initialLoading = (initialView === 'Genlink' || initialView === 'Find');
 
         function nongApp() {
             return {
@@ -327,10 +328,10 @@
                     // 3. Initialize LIFF (ทำขนานไป)
                     this.initLiff();
 
-                    // 4. โหลดข้อมูลเฉพาะ Mode ที่จำเป็น (Check ข้ามไปเลย)
-                    if (this.view !== 'Check') {
+                    // 4. โหลดข้อมูลเฉพาะ Mode ที่จำเป็น (Genlink/Find เท่านั้น)
+                    if (this.view === 'Genlink' || this.view === 'Find') {
                         this.getData();
-                    } else {
+                    } else if (this.view === 'Check') {
                         console.log("Check Mode: Skipped Data Loading");
                         this.showModal = true;
                     }
@@ -423,7 +424,7 @@
                     }
                 },
                 togglePeriod(val) {
-                    if (this.view === 'Main') {
+                    if (this.view === 'Genlink') {
                         if (this.selectedPeriods.includes(val)) {
                             this.selectedPeriods = [];
                         } else {
@@ -440,7 +441,7 @@
                 },
                 isSubmitDisabled() {
                     if (this.isRangeMode) return !this.tempEndDate;
-                    if (this.view === 'Main') return this.selectedPeriods.length === 0 || (this.config.strictMode && !this.checkSchedule(this.tempDate, this.selectedPeriods[0]));
+                    if (this.view === 'Genlink') return this.selectedPeriods.length === 0 || (this.config.strictMode && !this.checkSchedule(this.tempDate, this.selectedPeriods[0]));
                     if (this.selectedPeriods.length > 0) return this.config.strictMode && !this.selectedPeriods.every(p => this.checkSchedule(this.tempDate, p));
                     return false;
                 },
@@ -485,7 +486,7 @@
                     return current.toISOString().split('T')[0];
                 },
                 handleMainAction() {
-                    if (this.view === 'Main') {
+                    if (this.view === 'Genlink') {
                         this.generateLink(this.selectedStudent, this.tempDate, this.selectedPeriods[0]);
                     } else {
                         this.submitCheck(this.selectedStudent, this.tempDate, this.tempEndDate, this.selectedPeriods);
