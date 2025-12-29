@@ -100,107 +100,30 @@
             </div>
         </div>
 
-        <!-- Check Mode Full Page -->
-        <div x-show="view === 'Check'" class="flex flex-col h-full bg-slate-50">
-            <!-- Header -->
+        <!-- Check Mode Landing Page -->
+        <div x-show="view === 'Check'" class="flex flex-col h-full">
             <div class="bg-white px-4 pt-6 pb-4 shadow-sm z-10 shrink-0">
-                <h1 class="text-xl font-bold text-slate-800 mb-0 flex items-center">
+                <h1 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
                     <i class="fa-solid fa-calendar-check text-blue-600 mr-2"></i>
                     <span>เช็คเดลี่</span>
                 </h1>
+                <p class="text-slate-500 text-sm">กรุณาเลือกวันที่และคาบที่ต้องการตรวจสอบ</p>
             </div>
 
-            <!-- Content -->
-            <div class="flex-1 overflow-y-auto px-4 py-6">
-                <div class="max-w-md mx-auto">
-                    <!-- Date Input 1 -->
-                    <div class="bg-white p-1 rounded-xl border border-slate-200 mb-4 flex items-center shadow-sm">
-                        <div class="pl-3 pr-2 text-slate-400">
-                            <i class="fa-regular fa-calendar-days text-lg"></i>
-                        </div>
-                        <div :class="isWeekend(tempDate) ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'"
-                            class="text-sm font-bold px-2 py-1 rounded mr-2 min-w-[3rem] text-center transition-colors duration-200"
-                            x-text="getDayName(tempDate)">
-                        </div>
-                        <input type="date" x-model="tempDate" @change="onStartDateChange()"
-                            class="bg-transparent w-full text-slate-700 font-bold text-lg outline-none p-2 h-12">
-                    </div>
-
-                    <!-- Range Controls -->
-                    <div x-show="tempDate" class="mb-4 relative flex items-center">
-                        <div class="absolute inset-0 flex justify-center items-center">
-                            <i x-show="isRangeMode" class="fa-solid fa-arrow-down text-slate-400 text-sm"></i>
-                        </div>
-                        <button @click="toggleRangeMode()"
-                            class="ml-auto relative z-10 text-blue-600 hover:text-blue-800 underline text-sm font-medium">
-                            <span x-text="isRangeMode ? 'ค้นหาจากวัน' : 'ค้นหาเป็นช่วง'"></span>
-                        </button>
-                    </div>
-
-                    <!-- Date Input 2 (Range Mode) -->
-                    <div x-show="isRangeMode"
-                        class="bg-white p-1 rounded-xl border border-slate-200 mb-4 flex items-center shadow-sm">
-                        <div class="pl-3 pr-2 text-slate-400">
-                            <i class="fa-regular fa-calendar-days text-lg"></i>
-                        </div>
-                        <div :class="isWeekend(tempEndDate) ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'"
-                            class="text-sm font-bold px-2 py-1 rounded mr-2 min-w-[3rem] text-center transition-colors duration-200"
-                            x-text="getDayName(tempEndDate)">
-                        </div>
-                        <input type="date" x-model="tempEndDate" :min="tempDate"
-                            class="bg-transparent w-full text-slate-700 font-bold text-lg outline-none p-2 h-12">
-                    </div>
-
-                    <!-- Period Grid -->
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-4">
-                        <h3 class="text-sm font-bold text-slate-600 mb-3">เลือกคาบ</h3>
-                        <div class="grid grid-cols-3 gap-2">
-                            <template x-for="option in periodOptions">
-                                <button @click="togglePeriod(option.val)"
-                                    :disabled="!isRangeMode && config.strictMode && !checkSchedule(tempDate, option.val)"
-                                    :class="[
-                                        selectedPeriods.includes(option.val) ? 'bg-blue-600 border-blue-600 text-white shadow-md transform scale-[1.02]' : 'bg-white border-slate-200 text-slate-500 hover:border-blue-300',
-                                        (!isRangeMode && config.strictMode && !checkSchedule(tempDate, option.val)) ? 'opacity-30 grayscale cursor-not-allowed border-slate-100 bg-slate-50' : ''
-                                    ]"
-                                    class="flex flex-col items-center justify-center py-3 px-1 rounded-xl border-2 transition-all duration-200">
-                                    <i :class="option.icon" class="text-xl mb-1"></i>
-                                    <span class="text-xs font-bold uppercase" x-text="option.label"></span>
-                                </button>
-                            </template>
-                        </div>
-                        <div class="text-right text-xs text-slate-500 mt-3">ไม่เลือก=เช็คทุกคาบ</div>
-                    </div>
-
-                    <!-- Validation Message -->
-                    <div class="h-6 mb-3 text-center">
-                        <template x-if="config.strictMode && selectedPeriods.length > 0 && !isRangeMode">
-                            <div x-show="!selectedPeriods.every(p => checkSchedule(tempDate, p))">
-                                <p
-                                    class="text-xs text-red-500 font-bold flex items-center justify-center animate-pulse">
-                                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>
-                                    ไม่มีคลินิกในวันหรือคาบที่เลือก
-                                </p>
-                            </div>
-                        </template>
-                    </div>
-
-                    <!-- Action Button -->
-                    <button @click="handleMainAction()" :disabled="isSubmitDisabled()"
-                        :class="isSubmitDisabled() ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg shadow-blue-200 active:scale-[0.98]'"
-                        class="w-full py-4 text-lg font-bold rounded-xl transition-all flex items-center justify-center gap-2">
-                        <span>ตรวจสอบ</span>
-                        <i class="fa-solid fa-check"></i>
-                    </button>
+            <div class="flex-1 flex items-center justify-center">
+                <div class="text-center">
+                    <i class="fa-solid fa-calendar-days text-6xl text-blue-200 mb-4"></i>
+                    <p class="text-slate-400">กำลังเตรียมข้อมูล...</p>
                 </div>
             </div>
         </div>
 
-        <!-- Background Overlay for Modal (Main and Find modes only) -->
-        <div x-show="showModal && view !== 'Check'" x-transition.opacity
-            class="fixed inset-0 bg-black/50 z-40 backdrop-blur-[2px]" @click="closeModal()"></div>
+        <!-- Background Overlay for Modal -->
+        <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-black/50 z-40 backdrop-blur-[2px]"
+            @click="closeModal()"></div>
 
-        <!-- Bottom Slide-up Modal (Main and Find modes only) -->
-        <div x-show="showModal && view !== 'Check'" x-transition:enter="transition transform ease-out duration-300"
+        <!-- Bottom Slide-up Modal -->
+        <div x-show="showModal" x-transition:enter="transition transform ease-out duration-300"
             x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
             x-transition:leave="transition transform ease-in duration-300" x-transition:leave-start="translate-y-0"
             x-transition:leave-end="translate-y-full"
@@ -272,10 +195,9 @@
                         <button @click="togglePeriod(option.val)"
                             :disabled="!isRangeMode && config.strictMode && !checkSchedule(tempDate, option.val)"
                             :class="[
-                                selectedPeriods.includes(option.val) ? 'bg-blue-600 border-blue-600 text-white shadow-md transform scale-[1.02]' : 'bg-white border-slate-200 text-slate-500 hover:border-blue-300',
-                                (!isRangeMode && config.strictMode && !checkSchedule(tempDate, option.val)) ? 'opacity-30 grayscale cursor-not-allowed border-slate-100 bg-slate-50' : ''
-                            ]"
-                            class="flex flex-col items-center justify-center py-3 px-1 rounded-xl border-2 transition-all duration-200">
+                selectedPeriods.includes(option.val) ? 'bg-blue-600 border-blue-600 text-white shadow-md transform scale-[1.02]' : 'bg-white border-slate-200 text-slate-500 hover:border-blue-300',
+                (!isRangeMode && config.strictMode && !checkSchedule(tempDate, option.val)) ? 'opacity-30 grayscale cursor-not-allowed border-slate-100 bg-slate-50' : ''
+              ]" class="flex flex-col items-center justify-center py-3 px-1 rounded-xl border-2 transition-all duration-200">
                             <i :class="option.icon" class="text-xl mb-1"></i>
                             <span class="text-xs font-bold uppercase" x-text="option.label"></span>
                         </button>
@@ -367,7 +289,7 @@
                 search: '',
                 students: [],
                 selectedStudent: null,
-                // Check mode ไม่ใช้ modal แล้ว
+                // Check mode จะไม่เปิด modal ทันที รอให้ initApp() เปิดแทน
                 showModal: false,
                 result: null,
                 generatedCommand: null,
@@ -408,6 +330,10 @@
                         this.getData();
                     } else {
                         console.log("Check Mode: Skipped Data Loading");
+                        // เปิด modal หลัง 1 วินาที
+                        setTimeout(() => {
+                            this.showModal = true;
+                        }, 1000);
                     }
                 },
 
