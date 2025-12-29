@@ -189,7 +189,12 @@
                                 dateFormat: 'Y-m-d',
                                 defaultDate: tempDate,
                                 disableMobile: true,
-                                onChange: (selectedDates, dateStr) => { tempDate = dateStr; onStartDateChange(); }
+                                onChange: (selectedDates, dateStr) => { 
+                                    tempDate = dateStr; 
+                                    if (pickerEnd) pickerEnd.set('minDate', dateStr);
+                                    onStartDateChange(); 
+                                    if (isRangeMode && pickerEnd) setTimeout(() => pickerEnd.open(), 10);
+                                }
                             });
                         ">
                 </div>
@@ -229,6 +234,7 @@
                                 altFormat: 'D d M Y',
                                 dateFormat: 'Y-m-d',
                                 defaultDate: tempEndDate,
+                                minDate: tempDate,
                                 disableMobile: true,
                                 onChange: (selectedDates, dateStr) => { tempEndDate = dateStr; }
                             });
