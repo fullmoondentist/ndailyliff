@@ -128,7 +128,7 @@
     </div>
   </div>
 
-  <script>
+<script>
     // ===========================================
     // 🔴 ใส่ URL ของ GAS ที่ Deploy แล้วตรงนี้ !!!
     // ===========================================
@@ -149,19 +149,30 @@
         periodOptions: [{ val: 'Morning', label: 'Morning', icon: 'fa-regular fa-sun' }, { val: 'Afternoon', label: 'Afternoon', icon: 'fa-solid fa-cloud-sun' }, { val: 'Evening', label: 'Evening', icon: 'fa-solid fa-moon' }],
 
         async initApp() {
-          // 1. อ่านค่า Parameter จาก URL (แทน GAS e.parameter)
+          // 1. อ่านค่า Parameter
           const params = new URLSearchParams(window.location.search);
-          const action = params.get('action'); // ?action=Check
-          
-          if (action === 'Check') { this.view = 'Check'; this.showModal = true; } 
-          else if (action === 'Find') { this.view = 'Find'; } 
-          else { this.view = 'Main'; }
+          const action = params.get('action');
 
-          // 2. Init LIFF
+          // 2. Init LIFF (ทำคู่ขนานไปเลย)
           this.initLiff();
 
-          // 3. ดึงข้อมูลจาก Google Sheet (ผ่าน API)
-          await this.getDataFromSheet();
+          // 3. แยกการทำงานตาม Mode
+          if (action === 'Check') {
+             // ✅ กรณี Check: ไม่ต้องโหลดข้อมูล นศ. ให้เปิด Modal เลย
+             this.view = 'Check';
+             this.showModal = true;
+             this.isLoading = false; // ปิด Loading ทันที
+          } 
+          else {
+             // ✅ กรณี Main หรือ Find: ต้องโหลดข้อมูล นศ. ก่อน
+             if (action === 'Find') {
+                this.view = 'Find';
+             } else {
+                this.view = 'Main';
+             }
+             // วิ่งไปดึงข้อมูลจาก Sheet
+             await this.getDataFromSheet();
+          }
         },
 
         initLiff() {
@@ -220,7 +231,9 @@
             const formatD = (d) => d.split('-').reverse().join('/');
             const translateP = (p) => ({ 'Morning': 'เช้า', 'Afternoon': 'บ่าย', 'Evening': 'เย็น' }[p] || p);
             let msg = this.view === 'Find' ? "หาข้อมูล\n" : "เช็คข้อมูล\n";
+            // Check student null เพราะ mode Check ไม่มี student
             if (student) msg += `${student.name}\n`;
+            
             const ps = selectedPeriods.length > 0 ? selectedPeriods.map(translateP).join(' ') : "ทุกคาบ";
             if (this.isRangeMode && endDate && endDate >= startDate) { msg += `วันที่ ${formatD(startDate)} - ${formatD(endDate)}\nคาบ ${ps}`; } 
             else { msg += `วันที่ ${formatD(startDate)}\nคาบ ${ps}`; }
