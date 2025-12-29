@@ -267,8 +267,8 @@
 
 
     <script>
-        // API Configuration
-        const API_URL = 'https://script.google.com/macros/s/AKfycbynXlHluO0fRNH8RHmt9uRiny1XZiu3S3jXr4ehE5zi1QhW-AbgwZRSZyZHVsGUkiLV-g/exec';
+        // API Configuration (Switched to CSV)
+        // const API_URL = '...'; // Removed in favor of CSV_URL in getData()
 
         // 1. คำนวณค่าเริ่มต้นจาก URL ทันที (ไม่ต้องรอ App Init)
         const urlParams = new URLSearchParams(window.location.search);
@@ -352,28 +352,50 @@
                         });
                 },
 
-                getData() {
-                    this.loadStudentsWithRetry(0);
-                },
+                async getData() {
+                    // 1. ลองดึงจากเครื่องตัวเองก่อน (เร็วจี๋)
+                    const cachedData = localStorage.getItem('student_cache_v1');
+                    const cacheTime = localStorage.getItem('student_cache_time');
+                    const ONE_DAY = 24 * 60 * 60 * 1000; // อายุ Cache 1 วัน
 
-                loadStudentsWithRetry(retryCount) {
-                    const maxRetries = 2;
-                    fetch(API_URL)
-                        .then(response => response.json())
-                        .then(data => {
-                            this.students = data;
-                            this.isLoading = false;
-                            console.log('Students loaded:', data.length);
-                        })
-                        .catch(err => {
-                            console.error('Failed to load students:', err);
-                            if (retryCount < maxRetries) {
-                                setTimeout(() => this.loadStudentsWithRetry(retryCount + 1), 1000);
-                            } else {
-                                this.isLoading = false;
-                                alert('ไม่สามารถโหลดข้อมูลนักศึกษาได้');
-                            }
-                        });
+                    if (cachedData && cacheTime && (Date.now() - cacheTime < ONE_DAY)) {
+                        this.students = JSON.parse(cachedData);
+                        this.isLoading = false;
+                        console.log("Loaded from Local Cache");
+                        return; // จบงานเลย ไม่ต้องโหลดเน็ต
+                    }
+
+                    // 2. ถ้าไม่มี Cache ค่อยไปดึงจาก CSV (Publish to web)
+                    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTfybU2HgtAKCxICUV0HzBIGHgIxUtrblVKM9siUWU9GCzWD7ugl2inTW7MitErRluZgfQTHSAJedcW/pub?gid=1381895729&single=true&output=csv";
+
+                    try {
+                        const response = await fetch(CSV_URL);
+                        const text = await response.text();
+
+                        // แปลง CSV เป็น JSON
+                        const rows = text.split('\n').slice(1); // ตัดบรรทัดหัวตารางทิ้ง
+                        const data = rows.map(row => {
+                            // Column Mapping: Col A = ID (0), Col C = Name (2)
+                            const cols = row.split(',');
+                            return {
+                                id: cols[0]?.trim(),
+                                name: cols[2]?.trim()
+                            };
+                        }).filter(s => s.id && s.name); // กรองแถวว่างทิ้ง
+
+                        this.students = data;
+                        this.isLoading = false;
+
+                        // 3. บันทึกลงเครื่องไว้ใช้คราวหน้า
+                        localStorage.setItem('student_cache_v1', JSON.stringify(data));
+                        localStorage.setItem('student_cache_time', Date.now().toString());
+                        console.log("Loaded from CSV and cached");
+
+                    } catch (err) {
+                        console.error("CSV Error", err);
+                        this.isLoading = false;
+                        alert("โหลดข้อมูลไม่สำเร็จ");
+                    }
                 },
 
                 // --- ส่วน Logic อื่นๆ เหมือนเดิม ---
