@@ -175,12 +175,12 @@
 
 
 
-                <!-- Date Input 1 (Start Date or Range) -->
+                <!-- Date Input 1 (Start Date) -->
                 <div class="bg-slate-50 p-1 rounded-xl border border-slate-100 mb-4 flex items-center">
                     <div class="pl-3 pr-2 text-slate-400">
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
-                    <input type="text" x-model="tempDate" x-ref="pickerStart" @change="onStartDateChange()"
+                    <input type="text" x-model="tempDate" x-ref="pickerStart"
                         class="bg-transparent w-full text-slate-700 font-bold text-lg outline-none p-2 h-12" x-init="
                             $watch('tempDate', value => { 
                                 if(pickerStart && !isRangeMode) pickerStart.setDate(value, false) 
@@ -195,8 +195,12 @@
                                 disableMobile: true,
                                 onChange: (selectedDates, dateStr, instance) => { 
                                     if (isRangeMode) {
-                                        if (selectedDates.length === 2) {
+                                        if (selectedDates.length >= 1) {
                                             tempDate = instance.formatDate(selectedDates[0], 'Y-m-d');
+                                            // Force the input to show only the first date
+                                            instance.altInput.value = instance.formatDate(selectedDates[0], 'D d M Y');
+                                        }
+                                        if (selectedDates.length === 2) {
                                             tempEndDate = instance.formatDate(selectedDates[1], 'Y-m-d');
                                         }
                                     } else {
@@ -227,20 +231,16 @@
                     </div>
                 </div>
 
-
-
-                <!-- Date Input 2 (Range Mode - Read Only or Hidden) -->
-                <div x-show="isRangeMode"
-                    class="bg-slate-50 p-1 rounded-xl border border-slate-100 mb-4 flex items-center opacity-60">
-                    <div class="pl-3 pr-2 text-slate-400">
+                <!-- Date Input 2 (End Date - Range Mode) -->
+                <div x-show="isRangeMode" @click="if(pickerStart) pickerStart.open()"
+                    class="bg-white p-1 rounded-xl border border-blue-100 mb-4 flex items-center cursor-pointer hover:border-blue-300 transition-colors">
+                    <div class="pl-3 pr-2 text-blue-400">
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
-                    <input type="text" x-model="tempEndDate" readonly
-                        class="bg-transparent w-full text-slate-700 font-bold text-lg outline-none p-2 h-12" x-init="
-                            $watch('tempEndDate', value => { 
-                                if(isRangeMode && pickerStart) pickerStart.setDate([tempDate, tempEndDate], false) 
-                            });
-                        ">
+                    <div class="w-full p-2 h-12 flex items-center">
+                        <span class="text-slate-700 font-bold text-lg"
+                            x-text="tempEndDate ? getDayName(tempEndDate) + ' ' + formatThaiDate(tempEndDate) + ' ' + new Date(tempEndDate).getFullYear() : 'เลือกวันสิ้นสุด...'"></span>
+                    </div>
                 </div>
 
                 <!-- Period Grid -->
@@ -532,6 +532,8 @@
                     if (this.pickerStart) {
                         this.pickerStart.set('mode', 'range');
                         this.pickerStart.setDate([this.tempDate, this.tempEndDate], false);
+                        // Fix display
+                        this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
                     }
                 },
                 formatISO(date) {
@@ -557,7 +559,11 @@
 
                     if (this.isRangeMode) {
                         this.tempEndDate = this.getNextWorkingDay(this.tempDate, 3);
-                        if (this.pickerStart) this.pickerStart.setDate([this.tempDate, this.tempEndDate], false);
+                        if (this.pickerStart) {
+                            this.pickerStart.setDate([this.tempDate, this.tempEndDate], false);
+                            // Ensure display is consistent
+                            this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
+                        }
                     } else {
                         this.tempEndDate = null;
                         if (this.pickerStart) this.pickerStart.setDate(this.tempDate, false);
