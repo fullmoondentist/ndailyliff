@@ -51,21 +51,30 @@
                     <span x-text="view === 'Main' ? 'สร้าง Form กรอกเดลี่' : 'หาเดลี่ นทพ.'"></span>
                 </h1>
                 <div class="relative">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
-                    <input type="text" x-model="search" placeholder="พิมพ์ชื่อ หรือ รหัส..."
-                        class="w-full pl-11 pr-10 py-3 rounded-xl bg-slate-100 border-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-lg">
-                    <button x-show="search.length > 0" @click="search = ''"
-                        class="absolute right-3 top-3 text-slate-400 p-1">
-                        <i class="fa-solid fa-circle-xmark"></i>
-                    </button>
+                    <!-- Loading indicator inside search box -->
+                    <template x-if="isLoading">
+                        <div class="w-full pl-11 pr-10 py-3 rounded-xl bg-slate-100 flex items-center">
+                            <i class="fa-solid fa-circle-notch fa-spin text-slate-400 mr-2"></i>
+                            <span class="text-slate-400">กำลังโหลด...</span>
+                        </div>
+                    </template>
+
+                    <!-- Search input (shown after loading) -->
+                    <template x-if="!isLoading">
+                        <div>
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
+                            <input type="text" x-model="search" placeholder="พิมพ์ชื่อ หรือ รหัส..."
+                                class="w-full pl-11 pr-10 py-3 rounded-xl bg-slate-100 border-none focus:ring-2 focus:ring-blue-500 text-slate-800 text-lg">
+                            <button x-show="search.length > 0" @click="search = ''"
+                                class="absolute right-3 top-3 text-slate-400 p-1">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            </button>
+                        </div>
+                    </template>
                 </div>
             </div>
 
             <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-24">
-                <div x-show="isLoading" class="text-center py-10 text-slate-400">
-                    <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
-                    <p>กำลังโหลด...</p>
-                </div>
 
                 <template x-for="student in filteredStudents" :key="student.id">
                     <div @click="selectStudent(student)"
@@ -87,12 +96,6 @@
                     <p>ไม่พบรายชื่อ</p>
                 </div>
             </div>
-        </div>
-
-        <!-- Loading Screen for Check Mode -->
-        <div x-show="view === 'Check' && isLoading" class="flex flex-col items-center justify-center h-screen">
-            <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
-            <p class="text-slate-600 font-medium">กำลังโหลดข้อมูล...</p>
         </div>
 
         <!-- Background Overlay for Modal -->
