@@ -33,6 +33,12 @@
         .slide-up-leave-from {
             transform: translateY(0);
         }
+
+        .weekend-blocked {
+            pointer-events: none !important;
+            opacity: 0.4 !important;
+            background: transparent !important;
+        }
     </style>
 </head>
 
@@ -190,14 +196,16 @@
                                 altFormat: 'D d M Y',
                                 dateFormat: 'Y-m-d',
                                 mode: isRangeMode ? 'range' : 'single',
-                                disable: isRangeMode ? [] : [date => (date.getDay() === 0 || date.getDay() === 6)],
-                                defaultDate: isRangeMode && tempEndDate ? [tempDate, tempEndDate] : tempDate,
                                 disableMobile: true,
+                                onDayCreate: (dObj, dStr, fp, dayElem) => {
+                                    if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
+                                        dayElem.classList.add('weekend-blocked');
+                                    }
+                                },
                                 onChange: (selectedDates, dateStr, instance) => { 
                                     if (isRangeMode) {
                                         if (selectedDates.length >= 1) {
                                             tempDate = instance.formatDate(selectedDates[0], 'Y-m-d');
-                                            // Force the input to show only the first date
                                             instance.altInput.value = instance.formatDate(selectedDates[0], 'D d M Y');
                                         }
                                         if (selectedDates.length === 2) {
@@ -233,7 +241,7 @@
 
                 <!-- Date Input 2 (End Date - Range Mode) -->
                 <div x-show="isRangeMode" @click="if(pickerStart) pickerStart.open()"
-                    class="bg-white p-1 rounded-xl border border-slate-100 mb-4 flex items-center cursor-pointer hover:border-blue-300 transition-colors">
+                    class="bg-slate-50 p-1 rounded-xl border border-slate-100 mb-4 flex items-center cursor-pointer hover:border-blue-300 transition-colors">
                     <div class="pl-3 pr-2 text-slate-400">
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
@@ -531,7 +539,6 @@
                     // Synchronize with Flatpickr
                     if (this.pickerStart) {
                         this.pickerStart.set('mode', 'range');
-                        this.pickerStart.set('disable', []);
                         this.pickerStart.setDate([this.tempDate, this.tempEndDate], false);
                         // Fix display
                         this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
@@ -556,7 +563,6 @@
                     // Update picker config
                     if (this.pickerStart) {
                         this.pickerStart.set('mode', this.isRangeMode ? 'range' : 'single');
-                        this.pickerStart.set('disable', this.isRangeMode ? [] : [date => (date.getDay() === 0 || date.getDay() === 6)]);
                     }
 
                     if (this.isRangeMode) {
