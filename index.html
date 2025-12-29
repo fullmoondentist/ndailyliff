@@ -190,7 +190,7 @@
                                 altFormat: 'D d M Y',
                                 dateFormat: 'Y-m-d',
                                 mode: isRangeMode ? 'range' : 'single',
-                                disable: [ date => (date.getDay() === 0 || date.getDay() === 6) ],
+                                disable: isRangeMode ? [] : [date => (date.getDay() === 0 || date.getDay() === 6)],
                                 defaultDate: isRangeMode && tempEndDate ? [tempDate, tempEndDate] : tempDate,
                                 disableMobile: true,
                                 onChange: (selectedDates, dateStr, instance) => { 
@@ -233,13 +233,13 @@
 
                 <!-- Date Input 2 (End Date - Range Mode) -->
                 <div x-show="isRangeMode" @click="if(pickerStart) pickerStart.open()"
-                    class="bg-white p-1 rounded-xl border border-blue-100 mb-4 flex items-center cursor-pointer hover:border-blue-300 transition-colors">
-                    <div class="pl-3 pr-2 text-blue-400">
+                    class="bg-white p-1 rounded-xl border border-slate-100 mb-4 flex items-center cursor-pointer hover:border-blue-300 transition-colors">
+                    <div class="pl-3 pr-2 text-slate-400">
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
                     <div class="w-full p-2 h-12 flex items-center">
                         <span class="text-slate-700 font-bold text-lg"
-                            x-text="tempEndDate ? getDayName(tempEndDate) + ' ' + formatThaiDate(tempEndDate) + ' ' + new Date(tempEndDate).getFullYear() : 'เลือกวันสิ้นสุด...'"></span>
+                            x-text="tempEndDate ? formatEngDate(tempEndDate) : 'เลือกวันสิ้นสุด...'"></span>
                     </div>
                 </div>
 
@@ -531,6 +531,7 @@
                     // Synchronize with Flatpickr
                     if (this.pickerStart) {
                         this.pickerStart.set('mode', 'range');
+                        this.pickerStart.set('disable', []);
                         this.pickerStart.setDate([this.tempDate, this.tempEndDate], false);
                         // Fix display
                         this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
@@ -555,6 +556,7 @@
                     // Update picker config
                     if (this.pickerStart) {
                         this.pickerStart.set('mode', this.isRangeMode ? 'range' : 'single');
+                        this.pickerStart.set('disable', this.isRangeMode ? [] : [date => (date.getDay() === 0 || date.getDay() === 6)]);
                     }
 
                     if (this.isRangeMode) {
@@ -566,7 +568,11 @@
                         }
                     } else {
                         this.tempEndDate = null;
-                        if (this.pickerStart) this.pickerStart.setDate(this.tempDate, false);
+                        if (this.pickerStart) {
+                            this.pickerStart.setDate(this.tempDate, false);
+                            // Reset display for single mode
+                            this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
+                        }
                         this.autoSelectPeriod(this.tempDate);
                     }
                 },
@@ -695,6 +701,19 @@
                     const monthNames = ['มค', 'กพ', 'มีค', 'เมย', 'พค', 'มิย', 'กค', 'สค', 'กย', 'ตค', 'พย', 'ธค'];
                     const month = monthNames[date.getMonth()];
                     return `${day} ${month}`;
+                },
+                formatEngDate(dateStr) {
+                    if (!dateStr) return '';
+                    const date = new Date(dateStr);
+                    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+                    const dName = days[date.getUTCDay()];
+                    const dNum = date.getUTCDate().toString().padStart(2, '0');
+                    const mName = months[date.getUTCMonth()];
+                    const year = date.getUTCFullYear();
+
+                    return `${dName} ${dNum} ${mName} ${year}`;
                 },
                 formatThaiDateRange(startDateStr, endDateStr) {
                     if (!startDateStr || !endDateStr) return '';
