@@ -152,6 +152,23 @@
                     </button>
                 </div>
 
+                <!-- Quick Range Badges -->
+                <div x-show="view !== 'Genlink'" class="flex flex-wrap gap-1.5 mb-4">
+                    <button @click="setQuickRange('last_2_wks')"
+                        class="px-2 py-1 bg-slate-100 text-[10px] font-bold text-slate-500 rounded-md hover:bg-slate-200 active:bg-blue-50 active:text-blue-600 transition-colors">Last
+                        2 Wks</button>
+                    <button @click="setQuickRange('last_wk')"
+                        class="px-2 py-1 bg-slate-100 text-[10px] font-bold text-slate-500 rounded-md hover:bg-slate-200 active:bg-blue-50 active:text-blue-600 transition-colors">Last
+                        Wk</button>
+                    <button @click="setQuickRange('this_wk')"
+                        class="px-2 py-1 bg-slate-100 text-[10px] font-bold text-slate-500 rounded-md hover:bg-slate-200 active:bg-blue-50 active:text-blue-600 transition-colors">This
+                        Wk</button>
+                    <button @click="setQuickRange('this_mo')"
+                        class="px-2 py-1 bg-slate-100 text-[10px] font-bold text-slate-500 rounded-md hover:bg-slate-200 active:bg-blue-50 active:text-blue-600 transition-colors">This
+                        Mo</button>
+                </div>
+
+
                 <!-- Date Input 1 -->
                 <div class="bg-slate-50 p-1 rounded-xl border border-slate-100 mb-4 flex items-center">
                     <div class="pl-3 pr-2 text-slate-400">
@@ -440,6 +457,40 @@
                     this.isRangeMode = false;
                     this.tempEndDate = null;
                     this.result = null;
+                },
+                setQuickRange(type) {
+                    const today = new Date();
+                    const day = today.getDay(); // 0=Sun, 1=Mon...
+                    const diffToMon = day === 0 ? 6 : day - 1;
+                    const monday = new Date(today);
+                    monday.setDate(today.getDate() - diffToMon);
+
+                    let start, end;
+                    if (type === 'this_wk') {
+                        start = new Date(monday);
+                        end = new Date(today);
+                    } else if (type === 'last_wk') {
+                        start = new Date(monday);
+                        start.setDate(monday.getDate() - 7);
+                        end = new Date(start);
+                        end.setDate(start.getDate() + 4); // Friday
+                    } else if (type === 'last_2_wks') {
+                        start = new Date(monday);
+                        start.setDate(monday.getDate() - 14);
+                        end = new Date(start);
+                        end.setDate(start.getDate() + 4); // Friday of that week
+                    } else if (type === 'this_mo') {
+                        start = new Date(today.getFullYear(), today.getMonth(), 1);
+                        end = new Date(today);
+                    }
+
+                    this.isRangeMode = true;
+                    this.tempDate = this.formatISO(start);
+                    this.tempEndDate = this.formatISO(end);
+                    this.selectedPeriods = [];
+                },
+                formatISO(date) {
+                    return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().split('T')[0];
                 },
                 onStartDateChange() {
                     this.selectedPeriods = [];
