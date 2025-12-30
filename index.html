@@ -45,32 +45,11 @@
         .flatpickr-day.prevMonthDay.inRange,
         .flatpickr-day.nextMonthDay.inRange,
         .flatpickr-day.today.inRange,
-        .flatpickr-day.weekend-blocked.inRange,
-        .flatpickr-day.inRange.nextMonthDay,
-        .flatpickr-day.inRange.prevMonthDay {
+        .flatpickr-day.weekend-blocked.inRange {
             background: #dbeafe !important;
             border-color: transparent !important;
             box-shadow: -5px 0 0 #dbeafe, 5px 0 0 #dbeafe !important;
             border-radius: 0 !important;
-        }
-
-        /* Endpoints connection to the strip */
-        .flatpickr-day.selected.startRange,
-        .flatpickr-day.startRange {
-            border-radius: 50px 0 0 50px !important;
-            box-shadow: 5px 0 0 #dbeafe !important;
-        }
-
-        .flatpickr-day.selected.endRange,
-        .flatpickr-day.endRange {
-            border-radius: 0 50px 50px 0 !important;
-            box-shadow: -5px 0 0 #dbeafe !important;
-        }
-
-        /* Single day selection should be round */
-        .flatpickr-day.selected.startRange.endRange {
-            border-radius: 50px !important;
-            box-shadow: none !important;
         }
     </style>
 </head>
@@ -234,9 +213,8 @@
                                 altFormat: 'D d M Y',
                                 dateFormat: 'Y-m-d',
                                 mode: isRangeMode ? 'range' : 'single',
-                                defaultDate: isRangeMode && tempEndDate ? [tempDate, tempEndDate] : tempDate,
+                                defaultDate: tempDate,
                                 disableMobile: true,
-                                closeOnSelect: !isRangeMode, // Explicitly keep open for range
                                 onDayCreate: (dObj, dStr, fp, dayElem) => {
                                     if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
                                         dayElem.classList.add('weekend-blocked');
@@ -245,19 +223,16 @@
                                 onChange: (selectedDates, dateStr, instance) => { 
                                     if (isRangeMode) {
                                         if (selectedDates.length >= 1) {
-                                            const firstDate = instance.formatDate(selectedDates[0], 'Y-m-d');
-                                            if (tempDate !== firstDate) tempDate = firstDate;
-                                            
+                                            tempDate = instance.formatDate(selectedDates[0], 'Y-m-d');
                                             instance.altInput.value = instance.formatDate(selectedDates[0], 'D d M Y');
                                             
                                             // Clear end date if only one date is selected (starting new range)
-                                            if (selectedDates.length === 1 && tempEndDate !== null) {
+                                            if (selectedDates.length === 1) {
                                                 tempEndDate = null;
                                             }
                                         }
                                         if (selectedDates.length === 2) {
-                                            const secondDate = instance.formatDate(selectedDates[1], 'Y-m-d');
-                                            if (tempEndDate !== secondDate) tempEndDate = secondDate;
+                                            tempEndDate = instance.formatDate(selectedDates[1], 'Y-m-d');
                                         }
                                     } else {
                                         tempDate = dateStr; 
@@ -267,11 +242,8 @@
                             });
                             // Fix initial display
                             if (tempDate) {
-                                const d = isRangeMode && tempEndDate ? [tempDate, tempEndDate] : tempDate;
-                                pickerStart.setDate(d, false);
-                                if (pickerStart.selectedDates.length > 0) {
-                                    pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
-                                }
+                                pickerStart.setDate(tempDate, false);
+                                pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
                             }
                         ">
                 </div>
