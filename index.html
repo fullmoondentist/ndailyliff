@@ -45,11 +45,32 @@
         .flatpickr-day.prevMonthDay.inRange,
         .flatpickr-day.nextMonthDay.inRange,
         .flatpickr-day.today.inRange,
-        .flatpickr-day.weekend-blocked.inRange {
+        .flatpickr-day.weekend-blocked.inRange,
+        .flatpickr-day.inRange.nextMonthDay,
+        .flatpickr-day.inRange.prevMonthDay {
             background: #dbeafe !important;
             border-color: transparent !important;
             box-shadow: -5px 0 0 #dbeafe, 5px 0 0 #dbeafe !important;
             border-radius: 0 !important;
+        }
+
+        /* Endpoints connection to the strip */
+        .flatpickr-day.selected.startRange,
+        .flatpickr-day.startRange {
+            border-radius: 50px 0 0 50px !important;
+            box-shadow: 5px 0 0 #dbeafe !important;
+        }
+
+        .flatpickr-day.selected.endRange,
+        .flatpickr-day.endRange {
+            border-radius: 0 50px 50px 0 !important;
+            box-shadow: -5px 0 0 #dbeafe !important;
+        }
+
+        /* Single day selection should be round */
+        .flatpickr-day.selected.startRange.endRange {
+            border-radius: 50px !important;
+            box-shadow: none !important;
         }
     </style>
 </head>
