@@ -37,19 +37,31 @@
 
         .weekend-blocked {
             pointer-events: none !important;
-            opacity: 0.4 !important;
+            opacity: 0.4;
         }
 
-        /* Unified Flatpickr Range Style: Light Blue #dbeafe across all cells & gaps */
+        /* Unified Flatpickr Range Style: Light Blue #cce3fd across all cells & gaps */
         .flatpickr-day.inRange,
         .flatpickr-day.prevMonthDay.inRange,
         .flatpickr-day.nextMonthDay.inRange,
         .flatpickr-day.today.inRange,
         .flatpickr-day.weekend-blocked.inRange {
-            background: #dbeafe !important;
+            background: #cce3fd !important;
             border-color: transparent !important;
-            box-shadow: -5px 0 0 #dbeafe, 5px 0 0 #dbeafe !important;
+            box-shadow: -5px 0 0 #cce3fd, 5px 0 0 #cce3fd !important;
             border-radius: 0 !important;
+            opacity: 1 !important;
+            /* Force visibility even for weekends in range */
+        }
+
+        /* Styling for Range Endpoints */
+        .flatpickr-day.selected.startRange,
+        .flatpickr-day.selected.endRange {
+            background: #1d4ed8 !important;
+            /* Darker blue for endpoints */
+            color: white !important;
+            border-color: #1d4ed8 !important;
+            box-shadow: none !important;
         }
     </style>
 </head>
