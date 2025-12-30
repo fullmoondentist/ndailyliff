@@ -34,49 +34,6 @@
         .slide-up-leave-from {
             transform: translateY(0);
         }
-
-        .weekend-blocked {
-            pointer-events: none !important;
-            opacity: 0.4 !important;
-        }
-
-        /* Unified Flatpickr Range Style: Light Blue #dbeafe */
-        .flatpickr-day.inRange,
-        .flatpickr-day.prevMonthDay.inRange,
-        .flatpickr-day.nextMonthDay.inRange,
-        .flatpickr-day.today.inRange,
-        .flatpickr-day.weekend-blocked.inRange {
-            background: #dbeafe !important;
-            border-color: transparent !important;
-            border-radius: 0 !important;
-            box-shadow: -5px 0 0 #dbeafe, 5px 0 0 #dbeafe !important;
-        }
-
-        /* Fix Start/End point visuals (Half-circle look) */
-        .flatpickr-day.startRange,
-        .flatpickr-day.endRange {
-            background: #2563eb !important;
-            /* Primary blue for endpoints */
-            color: white !important;
-            border-radius: 50% !important;
-            /* Default circle for single pick */
-        }
-
-        .flatpickr-day.selected.startRange+.inRange,
-        .flatpickr-day.startRange.inRange {
-            border-radius: 50px 0 0 50px !important;
-            box-shadow: 5px 0 0 #dbeafe !important;
-        }
-
-        .flatpickr-day.endRange.inRange {
-            border-radius: 0 50px 50px 0 !important;
-            box-shadow: -5px 0 0 #dbeafe !important;
-        }
-
-        .flatpickr-day.startRange.endRange {
-            border-radius: 50% !important;
-            box-shadow: none !important;
-        }
     </style>
 </head>
 
@@ -231,7 +188,6 @@
                             $watch('tempDate', value => { 
                                 if(pickerStart && !isRangeMode) {
                                     pickerStart.setDate(value, false);
-                                    pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
                                 }
                             });
                             pickerStart = flatpickr($refs.pickerStart, {
@@ -241,16 +197,10 @@
                                 mode: isRangeMode ? 'range' : 'single',
                                 defaultDate: tempDate,
                                 disableMobile: true,
-                                onDayCreate: (dObj, dStr, fp, dayElem) => {
-                                    if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
-                                        dayElem.classList.add('weekend-blocked');
-                                    }
-                                },
                                 onChange: (selectedDates, dateStr, instance) => { 
                                     if (isRangeMode) {
                                         if (selectedDates.length >= 1) {
                                             tempDate = instance.formatDate(selectedDates[0], 'Y-m-d');
-                                            instance.altInput.value = instance.formatDate(selectedDates[0], 'D d M Y');
                                             
                                             // Clear end date if only one date is selected (starting new range)
                                             if (selectedDates.length === 1) {
@@ -269,7 +219,6 @@
                             // Fix initial display
                             if (tempDate) {
                                 pickerStart.setDate(tempDate, false);
-                                pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
                             }
                         ">
                 </div>
@@ -566,7 +515,6 @@
                     if (this.pickerStart) {
                         this.pickerStart.set('mode', 'single');
                         this.pickerStart.setDate(this.tempDate, false);
-                        this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
                     }
                 },
                 setQuickRange(type) {
@@ -614,8 +562,6 @@
                     if (this.pickerStart) {
                         this.pickerStart.set('mode', 'range');
                         this.pickerStart.setDate([this.tempDate, this.tempEndDate], false);
-                        // Fix display
-                        this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
                     }
                 },
                 formatISO(date) {
@@ -644,14 +590,11 @@
                         this.tempEndDate = this.getNextWorkingDay(this.tempDate, 3);
                         if (this.pickerStart) {
                             this.pickerStart.setDate([this.tempDate, this.tempEndDate], false);
-                            // Force manual sync to show only start date in altInput
-                            this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
                         }
                     } else {
                         this.tempEndDate = null;
                         if (this.pickerStart) {
                             this.pickerStart.setDate(this.tempDate, false);
-                            this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
                         }
                         this.autoSelectPeriod(this.tempDate);
                     }
