@@ -12,7 +12,9 @@
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.js"></script>
 
     <style>
         ::-webkit-scrollbar {
@@ -215,37 +217,39 @@
                                 mode: isRangeMode ? 'range' : 'single',
                                 defaultDate: tempDate,
                                 disableMobile: true,
-                                onDayCreate: (dObj, dStr, fp, dayElem) => {
-                                    if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
-                                        dayElem.classList.add('weekend-blocked');
-                                    }
-                                },
-                                onChange: (selectedDates, dateStr, instance) => { 
-                                    if (isRangeMode) {
-                                        if (selectedDates.length >= 1) {
-                                            tempDate = instance.formatDate(selectedDates[0], 'Y-m-d');
-                                            instance.altInput.value = instance.formatDate(selectedDates[0], 'D d M Y');
-                                            
-                                            // Clear end date if only one date is selected (starting new range)
-                                            if (selectedDates.length === 1) {
-                                                tempEndDate = null;
-                                            }
-                                        }
-                                        if (selectedDates.length === 2) {
-                                            tempEndDate = instance.formatDate(selectedDates[1], 'Y-m-d');
-                                        }
-                                    } else {
-                                        tempDate = dateStr; 
-                                        onStartDateChange(); 
-                                    }
-                                }
-                            });
-                            // Fix initial display
-                            if (tempDate) {
-                                pickerStart.setDate(tempDate, false);
-                                pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
-                            }
-                        ">
+                                plugins: [new confirmDatePlugin({
+                                    confirmText: " OK", showAlways: true, theme: "light" })], onDayCreate: (dObj, dStr,
+                        fp, dayElem)=> {
+                    if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
+                    dayElem.classList.add('weekend-blocked');
+                    }
+                    },
+                    onChange: (selectedDates, dateStr, instance) => {
+                    if (isRangeMode) {
+                    if (selectedDates.length >= 1) {
+                    tempDate = instance.formatDate(selectedDates[0], 'Y-m-d');
+                    instance.altInput.value = instance.formatDate(selectedDates[0], 'D d M Y');
+
+                    // Clear end date if only one date is selected (starting new range)
+                    if (selectedDates.length === 1) {
+                    tempEndDate = null;
+                    }
+                    }
+                    if (selectedDates.length === 2) {
+                    tempEndDate = instance.formatDate(selectedDates[1], 'Y-m-d');
+                    }
+                    } else {
+                    tempDate = dateStr;
+                    onStartDateChange();
+                    }
+                    }
+                    });
+                    // Fix initial display
+                    if (tempDate) {
+                    pickerStart.setDate(tempDate, false);
+                    pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
+                    }
+                    ">
                 </div>
 
                 <!-- Range Controls (Compact Switcher & Arrow) -->
