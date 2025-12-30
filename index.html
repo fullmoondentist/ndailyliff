@@ -510,8 +510,11 @@
                     const q = this.search.toString().toLowerCase();
                     return this.students.filter(s => {
                         const id = s.id ? s.id.toString().toLowerCase() : '';
-                        const name = s.name ? s.name.toString().toLowerCase() : '';
-                        return id.includes(q) || name.includes(q);
+                        // Strip prefixes for search comparison
+                        let searchableName = s.name ? s.name.toString().toLowerCase() : '';
+                        searchableName = searchableName.replace(/^(นาย|นางสาว|นาง)\s?/i, '');
+
+                        return id.includes(q) || searchableName.includes(q);
                     }).slice(0, 50);
                 },
                 selectStudent(student) {
