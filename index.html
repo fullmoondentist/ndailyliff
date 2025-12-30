@@ -101,10 +101,10 @@
                         class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 active:scale-[0.98] transition-transform flex justify-between items-center cursor-pointer group hover:border-blue-300">
                         <div>
                             <div class="font-bold text-slate-800 text-lg group-hover:text-blue-700"
-                                x-text="student.name"></div>
+                                x-html="highlight(student.name, search)"></div>
                             <div class="text-slate-500 text-sm mt-1">
                                 <i class="fa-regular fa-id-card mr-1 text-slate-300"></i>
-                                <span x-text="student.id"></span>
+                                <span x-html="highlight(student.id, search)"></span>
                             </div>
                         </div>
                         <i class="fa-solid fa-chevron-right text-slate-200"></i>
@@ -486,6 +486,18 @@
                 },
 
                 // --- ส่วน Logic อื่นๆ เหมือนเดิม ---
+                highlight(text, query) {
+                    if (!query || !text) return text;
+                    const q = query.toString().toLowerCase();
+                    const t = text.toString();
+                    const index = t.toLowerCase().indexOf(q);
+                    if (index === -1) return t;
+
+                    // Use regex for global case-insensitive replacement if needed, 
+                    // or just a simple split/join for basic matches
+                    const regex = new RegExp(`(${q})`, 'gi');
+                    return t.replace(regex, '<span class="text-blue-600 font-extrabold">$1</span>');
+                },
                 get filteredStudents() {
                     if (this.search === '') return [];
                     const q = this.search.toString().toLowerCase();
