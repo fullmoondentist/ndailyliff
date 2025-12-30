@@ -557,10 +557,9 @@
                         end = new Date(start);
                         end.setDate(start.getDate() + 4); // Friday
                     } else if (type === 'last_2_wks') {
-                        start = new Date(monday);
-                        start.setDate(monday.getDate() - 14);
-                        end = new Date(start);
-                        end.setDate(start.getDate() + 4); // Friday of that week
+                        start = new Date(today);
+                        start.setDate(today.getDate() - 14);
+                        end = new Date(today);
                     } else if (type === 'this_mo') {
                         start = new Date(today.getFullYear(), today.getMonth(), 1);
                         end = new Date(today);
@@ -710,12 +709,14 @@
                         'Afternoon': 'บ่าย',
                         'Evening': 'เย็น'
                     };
+                    const periodOrder = ['Morning', 'Afternoon', 'Evening'];
 
                     let periodStr = '';
                     if (selectedPeriods.length === 0) {
                         periodStr = 'ทุกคาบ';
                     } else {
-                        periodStr = selectedPeriods.map(p => periodMap[p] || p).join(', ');
+                        const sortedPeriods = [...selectedPeriods].sort((a, b) => periodOrder.indexOf(a) - periodOrder.indexOf(b));
+                        periodStr = sortedPeriods.map(p => periodMap[p] || p).join(', ');
                     }
 
                     const finalCommand = `${part1} | 📅 ${dateStr} | 🕒 ${periodStr}`;
@@ -751,8 +752,13 @@
                     window.location.href = `${baseUrl}?${params.toString()}`;
                 },
                 formatThaiDate(dateStr) {
-                    if (!dateStr) return '';
-                    const date = new Date(dateStr);
+                    if (!dateStr || dateStr === 'null' || dateStr === 'undefined') return '---';
+                    // Force replace - with / for better parsing compatibility
+                    const safeDateStr = dateStr.includes('-') ? dateStr.replace(/-/g, '/') : dateStr;
+                    const date = new Date(safeDateStr);
+
+                    if (isNaN(date.getTime())) return 'วันทีไม่ถูกต้อง';
+
                     const day = date.getDate();
                     const monthNames = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
                     const month = monthNames[date.getMonth()];
