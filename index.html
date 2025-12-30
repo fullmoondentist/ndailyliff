@@ -224,6 +224,11 @@
                                         if (selectedDates.length >= 1) {
                                             tempDate = instance.formatDate(selectedDates[0], 'Y-m-d');
                                             instance.altInput.value = instance.formatDate(selectedDates[0], 'D d M Y');
+                                            
+                                            // Clear end date if only one date is selected (starting new range)
+                                            if (selectedDates.length === 1) {
+                                                tempEndDate = null;
+                                            }
                                         }
                                         if (selectedDates.length === 2) {
                                             tempEndDate = instance.formatDate(selectedDates[1], 'Y-m-d');
@@ -526,8 +531,16 @@
                 resetForm() {
                     this.selectedPeriods = [];
                     this.isRangeMode = false;
+                    this.tempDate = this.getInitialWorkingDate();
                     this.tempEndDate = null;
                     this.result = null;
+
+                    // Force Flatpickr to reset
+                    if (this.pickerStart) {
+                        this.pickerStart.set('mode', 'single');
+                        this.pickerStart.setDate(this.tempDate, false);
+                        this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
+                    }
                 },
                 setQuickRange(type) {
                     const today = new Date();
@@ -752,12 +765,16 @@
                     window.location.href = `${baseUrl}?${params.toString()}`;
                 },
                 formatThaiDate(dateStr) {
-                    if (!dateStr || dateStr === 'null' || dateStr === 'undefined') return '---';
-                    // Force replace - with / for better parsing compatibility
-                    const safeDateStr = dateStr.includes('-') ? dateStr.replace(/-/g, '/') : dateStr;
-                    const date = new Date(safeDateStr);
+                    if (!dateStr || dateStr === 'null' || dateStr === 'undefined' || dateStr.includes('NaN')) return '---';
 
-                    if (isNaN(date.getTime())) return 'วันทีไม่ถูกต้อง';
+                    // Force replace - with / for better parsing compatibility if it looks like an ISO string
+                    let safeDateStr = dateStr;
+                    if (typeof dateStr === 'string' && dateStr.includes('-')) {
+                        safeDateStr = dateStr.replace(/-/g, '/');
+                    }
+
+                    const date = new Date(safeDateStr);
+                    if (isNaN(date.getTime())) return 'วันที่ไม่ถูกต้อง';
 
                     const day = date.getDate();
                     const monthNames = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
