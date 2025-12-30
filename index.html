@@ -193,7 +193,8 @@
 
 
                 <!-- Date Input 1 (Start Date) -->
-                <div class="bg-slate-50 p-1 rounded-xl border border-slate-100 mb-4 flex items-center">
+                <div class="bg-slate-50 p-1 rounded-xl border border-slate-100 mb-4 flex items-center cursor-pointer hover:border-blue-300 transition-colors"
+                    @click="if(pickerStart) pickerStart.open()">
                     <div class="pl-3 pr-2 text-slate-400">
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
