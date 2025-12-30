@@ -145,11 +145,11 @@
 
         <!-- Background Overlay for Flatpickr (Fade behind calendar) -->
         <div x-show="fpOverlay" x-transition.opacity
-            class="fixed inset-0 bg-black/70 z-[55] flex flex-col items-center justify-start pt-20 pointer-events-none">
+            class="fixed inset-0 bg-black/80 z-[55] flex flex-col items-center justify-start pt-20 pointer-events-none">
             <template x-if="isRangeMode">
                 <div class="bg-white/10 backdrop-blur-md px-6 py-2 rounded-full border border-white/20 shadow-xl">
                     <span class="text-white font-bold text-lg tracking-wide"
-                        x-text="!tempDate ? 'เลือกวันเริ่มต้น' : (!tempEndDate ? 'เลือกวันสิ้นสุด' : 'เลือกเรียบร้อย')"></span>
+                        x-text="tempDate && tempEndDate ? 'เลือกวันเริ่มต้น - วันสิ้นสุด' : 'เลือกวันสิ้นสุด'"></span>
                 </div>
             </template>
         </div>
