@@ -498,36 +498,54 @@
                     const q = query.toString().toLowerCase();
                     const t = text.toString();
 
-                    // Priority 1: Exact Substring Match (Bold & Blue)
-                    const index = t.toLowerCase().indexOf(q);
-                    if (index !== -1) {
-                        const regex = new RegExp(`(${q})`, 'gi');
-                        return t.replace(regex, '<span class="text-blue-600 font-extrabold">$1</span>');
+                    // 1. Handle Student ID match (IDs don't have prefixes)
+                    if (/^\d/.test(t)) {
+                        const idx = t.toLowerCase().indexOf(q);
+                        if (idx !== -1) {
+                            const regex = new RegExp(`(${q})`, 'gi');
+                            return t.replace(regex, '<span class="text-blue-600 font-extrabold">$1</span>');
+                        }
+                        return t;
                     }
 
-                    // Priority 2: Fuzzy Match (Highlight individual characters)
-                    // If no substring match, attempt to highlight ordered characters
-                    let result = "";
-                    let qIdx = 0;
-                    for (let i = 0; i < t.length; i++) {
-                        if (qIdx < q.length && t[i].toLowerCase() === q[qIdx]) {
-                            result += `<span class="text-blue-600 font-extrabold">${t[i]}</span>`;
-                            qIdx++;
-                        } else {
-                            result += t[i];
+                    // 2. Handle Name match (Ignore prefix)
+                    const prefixMatch = t.match(/^(นาย|นางสาว|นาง)\s?/i);
+                    const prefix = prefixMatch ? prefixMatch[0] : "";
+                    const namePart = t.slice(prefix.length);
+
+                    // --- Search and Highlight only in namePart ---
+                    const lowerName = namePart.toLowerCase();
+                    const qIdxInName = lowerName.indexOf(q);
+
+                    if (qIdxInName !== -1) {
+                        // Exact substring match in namePart
+                        const regex = new RegExp(`(${q})`, 'gi');
+                        return prefix + namePart.replace(regex, '<span class="text-blue-600 font-extrabold">$1</span>');
+                    } else {
+                        // Fuzzy match in namePart
+                        let resultPart = "";
+                        let queryPointer = 0;
+                        for (let i = 0; i < namePart.length; i++) {
+                            if (queryPointer < q.length && namePart[i].toLowerCase() === q[queryPointer]) {
+                                resultPart += `<span class="text-blue-600 font-extrabold">${namePart[i]}</span>`;
+                                queryPointer++;
+                            } else {
+                                resultPart += namePart[i];
+                            }
                         }
+                        return queryPointer === q.length ? prefix + resultPart : t;
                     }
-                    return qIdx === q.length ? result : t;
                 },
                 fuzzyMatch(text, query) {
                     if (!query) return true;
                     if (!text) return false;
+
+                    // Strip prefix for fuzzy matching comparison
+                    const searchable = text.toLowerCase().replace(/^(นาย|นางสาว|นาง)\s?/i, '');
                     let qIdx = 0;
-                    const t = text.toLowerCase();
-                    const q = query.toLowerCase();
-                    for (let i = 0; i < t.length; i++) {
-                        if (t[i] === q[qIdx]) qIdx++;
-                        if (qIdx === q.length) return true;
+                    for (let i = 0; i < searchable.length; i++) {
+                        if (searchable[i] === query.toLowerCase()[qIdx]) qIdx++;
+                        if (qIdx === query.length) return true;
                     }
                     return false;
                 },
