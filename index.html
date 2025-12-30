@@ -5,7 +5,6 @@
     <base target="_top">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NongDaily</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -33,35 +32,6 @@
         .slide-up-enter-to,
         .slide-up-leave-from {
             transform: translateY(0);
-        }
-
-        .weekend-blocked {
-            pointer-events: none !important;
-            opacity: 0.4;
-        }
-
-        /* Unified Flatpickr Range Style: Light Blue #cce3fd across all cells & gaps */
-        .flatpickr-day.inRange,
-        .flatpickr-day.prevMonthDay.inRange,
-        .flatpickr-day.nextMonthDay.inRange,
-        .flatpickr-day.today.inRange,
-        .flatpickr-day.weekend-blocked.inRange {
-            background: #cce3fd !important;
-            border-color: transparent !important;
-            box-shadow: -5px 0 0 #cce3fd, 5px 0 0 #cce3fd !important;
-            border-radius: 0 !important;
-            opacity: 1 !important;
-            /* Force visibility even for weekends in range */
-        }
-
-        /* Styling for Range Endpoints */
-        .flatpickr-day.selected.startRange,
-        .flatpickr-day.selected.endRange {
-            background: #1d4ed8 !important;
-            /* Darker blue for endpoints */
-            color: white !important;
-            border-color: #1d4ed8 !important;
-            box-shadow: none !important;
         }
     </style>
 </head>
@@ -114,10 +84,10 @@
                         class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 active:scale-[0.98] transition-transform flex justify-between items-center cursor-pointer group hover:border-blue-300">
                         <div>
                             <div class="font-bold text-slate-800 text-lg group-hover:text-blue-700"
-                                x-html="highlight(student.name, search)"></div>
+                                x-text="student.name"></div>
                             <div class="text-slate-500 text-sm mt-1">
                                 <i class="fa-regular fa-id-card mr-1 text-slate-300"></i>
-                                <span x-html="highlight(student.id, search)"></span>
+                                <span x-text="student.id"></span>
                             </div>
                         </div>
                         <i class="fa-solid fa-chevron-right text-slate-200"></i>
@@ -205,58 +175,27 @@
 
 
 
-                <!-- Date Input 1 (Start Date) -->
-                <div class="bg-slate-50 p-1 rounded-xl border border-slate-100 mb-4 flex items-center cursor-pointer hover:border-blue-300 transition-colors"
-                    @click="if(pickerStart) pickerStart.open()">
+                <!-- Date Input 1 -->
+                <div class="bg-slate-50 p-1 rounded-xl border border-slate-100 mb-4 flex items-center">
                     <div class="pl-3 pr-2 text-slate-400">
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
-                    <!-- Hidden but managed by Flatpickr, we remove x-model to avoid range-string pollution -->
-                    <input type="text" x-ref="pickerStart"
+                    <input type="text" x-model="tempDate" x-ref="pickerStart" @change="onStartDateChange()"
                         class="bg-transparent w-full text-slate-700 font-bold text-lg outline-none p-2 h-12" x-init="
-                            $watch('tempDate', value => { 
-                                if(pickerStart && !isRangeMode) {
-                                    pickerStart.setDate(value, false);
-                                    pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
-                                }
-                            });
+                            $watch('tempDate', value => { if(pickerStart) pickerStart.setDate(value, false) });
                             pickerStart = flatpickr($refs.pickerStart, {
                                 altInput: true,
                                 altFormat: 'D d M Y',
                                 dateFormat: 'Y-m-d',
-                                mode: isRangeMode ? 'range' : 'single',
                                 defaultDate: tempDate,
                                 disableMobile: true,
-                                onDayCreate: (dObj, dStr, fp, dayElem) => {
-                                    if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
-                                        dayElem.classList.add('weekend-blocked');
-                                    }
-                                },
-                                onChange: (selectedDates, dateStr, instance) => { 
-                                    if (isRangeMode) {
-                                        if (selectedDates.length >= 1) {
-                                            tempDate = instance.formatDate(selectedDates[0], 'Y-m-d');
-                                            instance.altInput.value = instance.formatDate(selectedDates[0], 'D d M Y');
-                                            
-                                            // Clear end date if only one date is selected (starting new range)
-                                            if (selectedDates.length === 1) {
-                                                tempEndDate = null;
-                                            }
-                                        }
-                                        if (selectedDates.length === 2) {
-                                            tempEndDate = instance.formatDate(selectedDates[1], 'Y-m-d');
-                                        }
-                                    } else {
-                                        tempDate = dateStr; 
-                                        onStartDateChange(); 
-                                    }
+                                onChange: (selectedDates, dateStr) => { 
+                                    tempDate = dateStr; 
+                                    if (pickerEnd) pickerEnd.set('minDate', dateStr);
+                                    onStartDateChange(); 
+                                    if (isRangeMode && pickerEnd) setTimeout(() => pickerEnd.open(), 10);
                                 }
                             });
-                            // Fix initial display
-                            if (tempDate) {
-                                pickerStart.setDate(tempDate, false);
-                                pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
-                            }
                         ">
                 </div>
 
@@ -279,16 +218,27 @@
                     </div>
                 </div>
 
-                <!-- Date Input 2 (End Date - Range Mode) -->
-                <div x-show="isRangeMode" @click="if(pickerStart) pickerStart.open()"
-                    class="bg-slate-50 p-1 rounded-xl border border-slate-100 mb-4 flex items-center cursor-pointer hover:border-blue-300 transition-colors">
+
+
+                <!-- Date Input 2 (Range Mode) -->
+                <div x-show="isRangeMode"
+                    class="bg-slate-50 p-1 rounded-xl border border-slate-100 mb-4 flex items-center">
                     <div class="pl-3 pr-2 text-slate-400">
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
-                    <div class="w-full p-2 h-12 flex items-center">
-                        <span class="text-slate-700 font-bold text-lg"
-                            x-text="tempEndDate ? formatEngDate(tempEndDate) : 'เลือกวันสิ้นสุด...'"></span>
-                    </div>
+                    <input type="text" x-model="tempEndDate" x-ref="pickerEnd"
+                        class="bg-transparent w-full text-slate-700 font-bold text-lg outline-none p-2 h-12" x-init="
+                            $watch('tempEndDate', value => { if(pickerEnd) pickerEnd.setDate(value, false) });
+                            pickerEnd = flatpickr($refs.pickerEnd, {
+                                altInput: true,
+                                altFormat: 'D d M Y',
+                                dateFormat: 'Y-m-d',
+                                defaultDate: tempEndDate,
+                                minDate: tempDate,
+                                disableMobile: true,
+                                onChange: (selectedDates, dateStr) => { tempEndDate = dateStr; }
+                            });
+                        ">
                 </div>
 
                 <!-- Period Grid -->
@@ -409,7 +359,7 @@
                 isInLineClient: false,
 
                 // Date Form States
-                tempDate: '', // Will be set in initApp
+                tempDate: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
                 tempEndDate: null,
                 pickerStart: null,
                 pickerEnd: null,
@@ -434,7 +384,6 @@
 
                 initApp() {
                     // ไม่ต้องอ่าน URL ซ้ำแล้ว ใช้ค่า initialView ได้เลย
-                    this.tempDate = this.getInitialWorkingDate();
 
                     // 3. Initialize LIFF (ทำขนานไป)
                     this.initLiff();
@@ -505,18 +454,6 @@
                 },
 
                 // --- ส่วน Logic อื่นๆ เหมือนเดิม ---
-                highlight(text, query) {
-                    if (!query || !text) return text;
-                    const q = query.toString().toLowerCase();
-                    const t = text.toString();
-                    const index = t.toLowerCase().indexOf(q);
-                    if (index === -1) return t;
-
-                    // Use regex for global case-insensitive replacement if needed, 
-                    // or just a simple split/join for basic matches
-                    const regex = new RegExp(`(${q})`, 'gi');
-                    return t.replace(regex, '<span class="text-blue-600 font-extrabold">$1</span>');
-                },
                 get filteredStudents() {
                     if (this.search === '') return [];
                     const q = this.search.toString().toLowerCase();
@@ -544,16 +481,8 @@
                 resetForm() {
                     this.selectedPeriods = [];
                     this.isRangeMode = false;
-                    this.tempDate = this.getInitialWorkingDate();
                     this.tempEndDate = null;
                     this.result = null;
-
-                    // Force Flatpickr to reset
-                    if (this.pickerStart) {
-                        this.pickerStart.set('mode', 'single');
-                        this.pickerStart.setDate(this.tempDate, false);
-                        this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
-                    }
                 },
                 setQuickRange(type) {
                     const today = new Date();
@@ -564,9 +493,6 @@
 
                     if (type === 'today') {
                         this.isRangeMode = false;
-                        if (this.pickerStart) {
-                            this.pickerStart.set('mode', 'single');
-                        }
                         this.tempDate = this.formatISO(today);
                         this.tempEndDate = null;
                         this.selectedPeriods = [];
@@ -583,9 +509,10 @@
                         end = new Date(start);
                         end.setDate(start.getDate() + 4); // Friday
                     } else if (type === 'last_2_wks') {
-                        start = new Date(today);
-                        start.setDate(today.getDate() - 14);
-                        end = new Date(today);
+                        start = new Date(monday);
+                        start.setDate(monday.getDate() - 14);
+                        end = new Date(start);
+                        end.setDate(start.getDate() + 4); // Friday of that week
                     } else if (type === 'this_mo') {
                         start = new Date(today.getFullYear(), today.getMonth(), 1);
                         end = new Date(today);
@@ -595,14 +522,6 @@
                     this.tempDate = this.formatISO(start);
                     this.tempEndDate = this.formatISO(end);
                     this.selectedPeriods = [];
-
-                    // Synchronize with Flatpickr
-                    if (this.pickerStart) {
-                        this.pickerStart.set('mode', 'range');
-                        this.pickerStart.setDate([this.tempDate, this.tempEndDate], false);
-                        // Fix display
-                        this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
-                    }
                 },
                 formatISO(date) {
                     return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().split('T')[0];
@@ -619,26 +538,10 @@
                 toggleRangeMode() {
                     this.isRangeMode = !this.isRangeMode;
                     this.selectedPeriods = [];
-
-                    // 1. Update mode FIRST
-                    if (this.pickerStart) {
-                        this.pickerStart.set('mode', this.isRangeMode ? 'range' : 'single');
-                    }
-
-                    // 2. Update dates
                     if (this.isRangeMode) {
                         this.tempEndDate = this.getNextWorkingDay(this.tempDate, 3);
-                        if (this.pickerStart) {
-                            this.pickerStart.setDate([this.tempDate, this.tempEndDate], false);
-                            // Force manual sync to show only start date in altInput
-                            this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
-                        }
                     } else {
                         this.tempEndDate = null;
-                        if (this.pickerStart) {
-                            this.pickerStart.setDate(this.tempDate, false);
-                            this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
-                        }
                         this.autoSelectPeriod(this.tempDate);
                     }
                 },
@@ -694,14 +597,6 @@
                         this.selectedPeriods = [allowed[0]];
                     }
                 },
-                getInitialWorkingDate() {
-                    let d = new Date();
-                    // If today is Sat (6) or Sun (0), move back to Fri (5)
-                    while (d.getDay() === 0 || d.getDay() === 6) {
-                        d.setDate(d.getDate() - 1);
-                    }
-                    return this.formatISO(d);
-                },
                 getNextWorkingDay(dateStr, days) {
                     if (!dateStr) return '';
                     let current = new Date(dateStr);
@@ -722,31 +617,22 @@
                     }
                 },
                 submitCheck(student, startDate, endDate, selectedPeriods) {
-                    const part1 = this.view === 'Find'
-                        ? `🔍 หา: ${student ? student.name : ''}`
-                        : `📋 เช็คเดลี่`;
-
-                    const dateStr = (this.isRangeMode && endDate && endDate >= startDate)
-                        ? this.formatThaiDateRange(startDate, endDate)
-                        : this.formatThaiDate(startDate);
-
-                    const periodMap = {
-                        'Morning': 'เช้า',
-                        'Afternoon': 'บ่าย',
-                        'Evening': 'เย็น'
-                    };
-                    const periodOrder = ['Morning', 'Afternoon', 'Evening'];
-
-                    let periodStr = '';
-                    if (selectedPeriods.length === 0) {
-                        periodStr = 'ทุกคาบ';
+                    let command = '';
+                    if (this.view === 'Find') {
+                        command = 'หาเดลี่';
+                        if (student) command += ' ' + student.name;
                     } else {
-                        const sortedPeriods = [...selectedPeriods].sort((a, b) => periodOrder.indexOf(a) - periodOrder.indexOf(b));
-                        periodStr = sortedPeriods.map(p => periodMap[p] || p).join(', ');
+                        command = 'เช็คเดลี่';
                     }
-
-                    const finalCommand = `${part1} | 📅 ${dateStr} | 🕒 ${periodStr}`;
-                    this.sendMessageToLine(finalCommand);
+                    if (this.isRangeMode && endDate && endDate >= startDate) {
+                        command += ' ' + this.formatThaiDateRange(startDate, endDate);
+                    } else {
+                        command += ' ' + this.formatThaiDate(startDate);
+                    }
+                    if (selectedPeriods.length > 0) {
+                        command += ' คาบ ' + selectedPeriods.join(' ');
+                    }
+                    this.sendMessageToLine(command);
                 },
                 sendMessageToLine(message) {
                     if (!this.liffReady) {
@@ -778,41 +664,12 @@
                     window.location.href = `${baseUrl}?${params.toString()}`;
                 },
                 formatThaiDate(dateStr) {
-                    if (!dateStr || dateStr === 'null' || dateStr === 'undefined' || (typeof dateStr === 'string' && dateStr.includes('NaN'))) return '---';
-
-                    let safeDateStr = dateStr;
-                    // If it's a string, we might need cleaning. If it's a Date object, it's fine.
-                    if (typeof dateStr === 'string') {
-                        // Ensure it's not a range string from Flatpickr leftover
-                        if (dateStr.includes(' to ')) {
-                            safeDateStr = dateStr.split(' to ')[0];
-                        }
-                        if (safeDateStr.includes('-')) {
-                            safeDateStr = safeDateStr.replace(/-/g, '/');
-                        }
-                    }
-
-                    const date = new Date(safeDateStr);
-                    if (isNaN(date.getTime())) return 'วันที่ไม่ถูกต้อง';
-
-                    const day = date.getDate();
-                    const monthNames = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-                    const month = monthNames[date.getMonth()];
-                    const thaiYear = ((date.getFullYear() + 543) % 100).toString().padStart(2, '0');
-                    return `${day} ${month} ${thaiYear}`;
-                },
-                formatEngDate(dateStr) {
                     if (!dateStr) return '';
                     const date = new Date(dateStr);
-                    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-                    const dName = days[date.getUTCDay()];
-                    const dNum = date.getUTCDate().toString().padStart(2, '0');
-                    const mName = months[date.getUTCMonth()];
-                    const year = date.getUTCFullYear();
-
-                    return `${dName} ${dNum} ${mName} ${year}`;
+                    const day = date.getDate();
+                    const monthNames = ['มค', 'กพ', 'มีค', 'เมย', 'พค', 'มิย', 'กค', 'สค', 'กย', 'ตค', 'พย', 'ธค'];
+                    const month = monthNames[date.getMonth()];
+                    return `${day} ${month}`;
                 },
                 formatThaiDateRange(startDateStr, endDateStr) {
                     if (!startDateStr || !endDateStr) return '';
