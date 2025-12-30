@@ -697,22 +697,29 @@
                     }
                 },
                 submitCheck(student, startDate, endDate, selectedPeriods) {
-                    let command = '';
-                    if (this.view === 'Find') {
-                        command = 'หาเดลี่';
-                        if (student) command += ' ' + student.name;
+                    const part1 = this.view === 'Find'
+                        ? `🔍 หา: ${student ? student.name : ''}`
+                        : `📋 เช็คเดลี่`;
+
+                    const dateStr = (this.isRangeMode && endDate && endDate >= startDate)
+                        ? this.formatThaiDateRange(startDate, endDate)
+                        : this.formatThaiDate(startDate);
+
+                    const periodMap = {
+                        'Morning': 'เช้า',
+                        'Afternoon': 'บ่าย',
+                        'Evening': 'เย็น'
+                    };
+
+                    let periodStr = '';
+                    if (selectedPeriods.length === 0) {
+                        periodStr = 'ทุกคาบ';
                     } else {
-                        command = 'เช็คเดลี่';
+                        periodStr = selectedPeriods.map(p => periodMap[p] || p).join(', ');
                     }
-                    if (this.isRangeMode && endDate && endDate >= startDate) {
-                        command += ' ' + this.formatThaiDateRange(startDate, endDate);
-                    } else {
-                        command += ' ' + this.formatThaiDate(startDate);
-                    }
-                    if (selectedPeriods.length > 0) {
-                        command += ' คาบ ' + selectedPeriods.join(' ');
-                    }
-                    this.sendMessageToLine(command);
+
+                    const finalCommand = `${part1} | 📅 ${dateStr} | 🕒 ${periodStr}`;
+                    this.sendMessageToLine(finalCommand);
                 },
                 sendMessageToLine(message) {
                     if (!this.liffReady) {
@@ -747,9 +754,10 @@
                     if (!dateStr) return '';
                     const date = new Date(dateStr);
                     const day = date.getDate();
-                    const monthNames = ['มค', 'กพ', 'มีค', 'เมย', 'พค', 'มิย', 'กค', 'สค', 'กย', 'ตค', 'พย', 'ธค'];
+                    const monthNames = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
                     const month = monthNames[date.getMonth()];
-                    return `${day} ${month}`;
+                    const thaiYear = ((date.getFullYear() + 543) % 100).toString().padStart(2, '0');
+                    return `${day} ${month} ${thaiYear}`;
                 },
                 formatEngDate(dateStr) {
                     if (!dateStr) return '';
