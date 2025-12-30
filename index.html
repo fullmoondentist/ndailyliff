@@ -213,8 +213,9 @@
                                 altFormat: 'D d M Y',
                                 dateFormat: 'Y-m-d',
                                 mode: isRangeMode ? 'range' : 'single',
-                                defaultDate: tempDate,
+                                defaultDate: isRangeMode && tempEndDate ? [tempDate, tempEndDate] : tempDate,
                                 disableMobile: true,
+                                closeOnSelect: !isRangeMode, // Explicitly keep open for range
                                 onDayCreate: (dObj, dStr, fp, dayElem) => {
                                     if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
                                         dayElem.classList.add('weekend-blocked');
@@ -223,16 +224,19 @@
                                 onChange: (selectedDates, dateStr, instance) => { 
                                     if (isRangeMode) {
                                         if (selectedDates.length >= 1) {
-                                            tempDate = instance.formatDate(selectedDates[0], 'Y-m-d');
+                                            const firstDate = instance.formatDate(selectedDates[0], 'Y-m-d');
+                                            if (tempDate !== firstDate) tempDate = firstDate;
+                                            
                                             instance.altInput.value = instance.formatDate(selectedDates[0], 'D d M Y');
                                             
                                             // Clear end date if only one date is selected (starting new range)
-                                            if (selectedDates.length === 1) {
+                                            if (selectedDates.length === 1 && tempEndDate !== null) {
                                                 tempEndDate = null;
                                             }
                                         }
                                         if (selectedDates.length === 2) {
-                                            tempEndDate = instance.formatDate(selectedDates[1], 'Y-m-d');
+                                            const secondDate = instance.formatDate(selectedDates[1], 'Y-m-d');
+                                            if (tempEndDate !== secondDate) tempEndDate = secondDate;
                                         }
                                     } else {
                                         tempDate = dateStr; 
@@ -242,8 +246,11 @@
                             });
                             // Fix initial display
                             if (tempDate) {
-                                pickerStart.setDate(tempDate, false);
-                                pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
+                                const d = isRangeMode && tempEndDate ? [tempDate, tempEndDate] : tempDate;
+                                pickerStart.setDate(d, false);
+                                if (pickerStart.selectedDates.length > 0) {
+                                    pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
+                                }
                             }
                         ">
                 </div>
