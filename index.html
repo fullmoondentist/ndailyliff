@@ -51,9 +51,9 @@
             box-shadow: -5px 0 0 #dbeafe, 5px 0 0 #dbeafe !important;
             border-radius: 0 !important;
         }
-        
+
         [x-cloak] {
-        display: none !important;
+            display: none !important;
         }
     </style>
 </head>
@@ -96,7 +96,7 @@
                                 <i class="fa-solid fa-circle-xmark"></i>
                             </button>
                         </div>
-                        
+
                     </template>
                 </div>
             </div>
@@ -186,7 +186,10 @@
                                 <h2 class="text-xl font-bold text-slate-800 truncate" x-text="selectedStudent.name">
                                 </h2>
                                 <div class="flex items-center gap-3 mt-1">
-                                    <span class="text-slate-400 text-sm" x-text="selectedStudent.id"></span>
+                                    <span class="text-slate-400 text-sm">
+                                        <i class="fa-regular fa-id-card mr-1 text-slate-200"></i>
+                                        <span x-text="selectedStudent.id"></span>
+                                    </span>
                                     <template x-if="selectedStudent.unit">
                                         <span class="text-slate-400 text-sm">
                                             <i class="fa-solid fa-location-dot mr-1 text-slate-200"></i>
@@ -406,7 +409,7 @@
         if (urlAction === 'find') initialView = 'Find';
 
         // เช็ค Cache ทันที (เพื่อให้ isLoading เป็น false ตั้งแต่ต้น)
-        const cachedData = localStorage.getItem('student_cache_v2');
+        const cachedData = localStorage.getItem('student_cache_v1');
         const cacheTime = localStorage.getItem('student_cache_time');
         const ONE_DAY = 6 * 60 * 60 * 1000;
         const hasValidCache = cachedData && cacheTime && (Date.now() - parseInt(cacheTime) < ONE_DAY);
