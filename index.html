@@ -103,9 +103,17 @@
                         <div>
                             <div class="font-bold text-slate-800 text-lg group-hover:text-blue-700"
                                 x-html="highlight(student.name, search)"></div>
-                            <div class="text-slate-500 text-sm mt-1">
-                                <i class="fa-regular fa-id-card mr-1 text-slate-300"></i>
-                                <span x-html="highlight(student.id, search)"></span>
+                            <div class="text-slate-500 text-sm mt-1 flex items-center gap-3">
+                                <span>
+                                    <i class="fa-regular fa-id-card mr-1 text-slate-300"></i>
+                                    <span x-html="highlight(student.id, search)"></span>
+                                </span>
+                                <template x-if="student.unit">
+                                    <span>
+                                        <i class="fa-solid fa-location-pin mr-1 text-slate-300"></i>
+                                        <span x-html="highlight(student.unit, search)"></span>
+                                    </span>
+                                </template>
                             </div>
                         </div>
                         <i class="fa-solid fa-chevron-right text-slate-200"></i>
@@ -171,7 +179,15 @@
                             <div>
                                 <h2 class="text-xl font-bold text-slate-800 truncate" x-text="selectedStudent.name">
                                 </h2>
-                                <span class="text-slate-400 text-sm" x-text="selectedStudent.id"></span>
+                                <div class="flex items-center gap-3 mt-1">
+                                    <span class="text-slate-400 text-sm" x-text="selectedStudent.id"></span>
+                                    <template x-if="selectedStudent.unit">
+                                        <span class="text-slate-400 text-sm">
+                                            <i class="fa-solid fa-location-pin mr-1 text-slate-200"></i>
+                                            <span x-text="selectedStudent.unit"></span>
+                                        </span>
+                                    </template>
+                                </div>
                             </div>
                         </template>
                         <template x-if="!selectedStudent">
@@ -484,11 +500,12 @@
                         // แปลง CSV เป็น JSON
                         const rows = text.split('\n').slice(1); // ตัดบรรทัดหัวตารางทิ้ง
                         const data = rows.map(row => {
-                            // Column Mapping: Col A = ID (0), Col C = Name (2)
+                            // Column Mapping: Col A = ID (0), Col C = Name (2), Col D = Unit (3)
                             const cols = row.split(',');
                             return {
                                 id: cols[0]?.trim(),
-                                name: cols[2]?.trim()
+                                name: cols[2]?.trim(),
+                                unit: cols[3]?.trim()
                             };
                         }).filter(s => s.id && s.name); // กรองแถวว่างทิ้ง
 
@@ -513,8 +530,8 @@
                     const q = query.toString().toLowerCase();
                     const t = text.toString();
 
-                    // 1. Handle Student ID match (IDs don't have prefixes)
-                    if (/^\d/.test(t)) {
+                    // 1. Handle Student ID or Unit match (No prefixes, exact first then fuzzy)
+                    if (/^\d/.test(t) || t.length < 5) { // Assuming Unit might be short 
                         const idx = t.toLowerCase().indexOf(q);
                         if (idx !== -1) {
                             const regex = new RegExp(`(${q})`, 'gi');
@@ -571,6 +588,7 @@
                     return this.students
                         .map(s => {
                             const id = s.id ? s.id.toString().toLowerCase() : '';
+                            const unit = s.unit ? s.unit.toString().toLowerCase() : '';
                             let name = s.name ? s.name.toString().toLowerCase() : '';
                             // Strip prefixes for scoring comparison
                             name = name.replace(/^(นาย|นางสาว|นาง)\s?/i, '');
@@ -578,10 +596,13 @@
                             let score = 0;
                             if (id === q) score = 100;
                             else if (id.includes(q)) score = 90;
-                            else if (name === q) score = 80;
+                            else if (unit === q) score = 85;
+                            else if (unit.includes(q)) score = 80;
+                            else if (name === q) score = 75;
                             else if (name.startsWith(q)) score = 70;
                             else if (name.includes(q)) score = 60;
                             else if (this.fuzzyMatch(name, q)) score = 50;
+                            else if (this.fuzzyMatch(unit, q)) score = 40;
 
                             return { ...s, score };
                         })
