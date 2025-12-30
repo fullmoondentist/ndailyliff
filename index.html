@@ -199,19 +199,20 @@
                     <div class="pl-3 pr-2 text-slate-400">
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
-                    <input type="text" :value="tempDate" x-ref="pickerStart"
+                    <!-- Hidden but managed by Flatpickr, we remove x-model to avoid range-string pollution -->
+                    <input type="text" x-ref="pickerStart"
                         class="bg-transparent w-full text-slate-700 font-bold text-lg outline-none p-2 h-12" x-init="
                             $watch('tempDate', value => { 
-                                if(this.pickerStart && !this.isRangeMode) {
-                                    this.pickerStart.setDate(value, false);
-                                    this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
+                                if(pickerStart && !isRangeMode) {
+                                    pickerStart.setDate(value, false);
+                                    pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
                                 }
                             });
-                            this.pickerStart = flatpickr($refs.pickerStart, {
+                            pickerStart = flatpickr($refs.pickerStart, {
                                 altInput: true,
                                 altFormat: 'D d M Y',
                                 dateFormat: 'Y-m-d',
-                                mode: this.isRangeMode ? 'range' : 'single',
+                                mode: isRangeMode ? 'range' : 'single',
                                 defaultDate: tempDate,
                                 disableMobile: true,
                                 onDayCreate: (dObj, dStr, fp, dayElem) => {
@@ -220,29 +221,29 @@
                                     }
                                 },
                                 onChange: (selectedDates, dateStr, instance) => { 
-                                    if (this.isRangeMode) {
+                                    if (isRangeMode) {
                                         if (selectedDates.length >= 1) {
-                                            this.tempDate = instance.formatDate(selectedDates[0], 'Y-m-d');
+                                            tempDate = instance.formatDate(selectedDates[0], 'Y-m-d');
                                             instance.altInput.value = instance.formatDate(selectedDates[0], 'D d M Y');
                                             
                                             // Clear end date if only one date is selected (starting new range)
                                             if (selectedDates.length === 1) {
-                                                this.tempEndDate = null;
+                                                tempEndDate = null;
                                             }
                                         }
                                         if (selectedDates.length === 2) {
-                                            this.tempEndDate = instance.formatDate(selectedDates[1], 'Y-m-d');
+                                            tempEndDate = instance.formatDate(selectedDates[1], 'Y-m-d');
                                         }
                                     } else {
-                                        this.tempDate = dateStr; 
-                                        this.onStartDateChange(); 
+                                        tempDate = dateStr; 
+                                        onStartDateChange(); 
                                     }
                                 }
                             });
                             // Fix initial display
-                            if (tempDate && this.pickerStart) {
-                                this.pickerStart.setDate(tempDate, false);
-                                this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
+                            if (tempDate) {
+                                pickerStart.setDate(tempDate, false);
+                                pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
                             }
                         ">
                 </div>
@@ -607,23 +608,23 @@
                     this.isRangeMode = !this.isRangeMode;
                     this.selectedPeriods = [];
 
-                    // Update picker config
+                    // 1. Update mode FIRST
                     if (this.pickerStart) {
                         this.pickerStart.set('mode', this.isRangeMode ? 'range' : 'single');
                     }
 
+                    // 2. Update dates
                     if (this.isRangeMode) {
                         this.tempEndDate = this.getNextWorkingDay(this.tempDate, 3);
                         if (this.pickerStart) {
                             this.pickerStart.setDate([this.tempDate, this.tempEndDate], false);
-                            // Ensure display is consistent
+                            // Force manual sync to show only start date in altInput
                             this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
                         }
                     } else {
                         this.tempEndDate = null;
                         if (this.pickerStart) {
                             this.pickerStart.setDate(this.tempDate, false);
-                            // Reset display for single mode
                             this.pickerStart.altInput.value = this.pickerStart.formatDate(this.pickerStart.selectedDates[0], 'D d M Y');
                         }
                         this.autoSelectPeriod(this.tempDate);
@@ -767,13 +768,13 @@
                 formatThaiDate(dateStr) {
                     if (!dateStr || dateStr === 'null' || dateStr === 'undefined' || (typeof dateStr === 'string' && dateStr.includes('NaN'))) return '---';
 
-                    // Force replace - with / for better parsing compatibility if it looks like an ISO string
                     let safeDateStr = dateStr;
+                    // If it's a string, we might need cleaning. If it's a Date object, it's fine.
                     if (typeof dateStr === 'string') {
-                        // Handle range strings (glitch prevention) - take only the first date part
-                        if (dateStr.includes(' to ')) safeDateStr = dateStr.split(' to ')[0];
-                        else if (dateStr.includes(' - ')) safeDateStr = dateStr.split(' - ')[0];
-
+                        // Ensure it's not a range string from Flatpickr leftover
+                        if (dateStr.includes(' to ')) {
+                            safeDateStr = dateStr.split(' to ')[0];
+                        }
                         if (safeDateStr.includes('-')) {
                             safeDateStr = safeDateStr.replace(/-/g, '/');
                         }
