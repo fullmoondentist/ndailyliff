@@ -144,7 +144,15 @@
             @click="closeModal()"></div>
 
         <!-- Background Overlay for Flatpickr (Fade behind calendar) -->
-        <div x-show="fpOverlay" x-transition.opacity class="fixed inset-0 bg-black/40 z-[55] pointer-events-none"></div>
+        <div x-show="fpOverlay" x-transition.opacity
+            class="fixed inset-0 bg-black/70 z-[55] flex flex-col items-center justify-start pt-20 pointer-events-none">
+            <template x-if="isRangeMode">
+                <div class="bg-white/10 backdrop-blur-md px-6 py-2 rounded-full border border-white/20 shadow-xl">
+                    <span class="text-white font-bold text-lg tracking-wide"
+                        x-text="!tempDate ? 'เลือกวันเริ่มต้น' : (!tempEndDate ? 'เลือกวันสิ้นสุด' : 'เลือกเรียบร้อย')"></span>
+                </div>
+            </template>
+        </div>
 
         <!-- Bottom Slide-up Modal -->
         <div x-show="showModal" x-transition:enter="transition transform ease-out duration-300"
@@ -280,8 +288,8 @@
                     </div>
                     <div class="w-full p-2 h-12 flex items-center">
                         <span class="text-lg"
-                            :class="tempEndDate ? 'text-slate-700 font-bold' : 'text-blue-500 font-bold animate-pulse'"
-                            x-text="!tempDate ? 'รอกดเลือกวันเริ่ม...' : (!tempEndDate ? '👉 เลือกวันสิ้นสุด...' : formatEngDate(tempEndDate))"></span>
+                            :class="tempEndDate ? 'text-slate-700 font-bold' : 'text-slate-400 font-medium'"
+                            x-text="tempEndDate ? formatEngDate(tempEndDate) : 'เลือกวันสิ้นสุด...'"></span>
                     </div>
                 </div>
 
