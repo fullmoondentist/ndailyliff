@@ -497,25 +497,64 @@
                     if (!query || !text) return text;
                     const q = query.toString().toLowerCase();
                     const t = text.toString();
-                    const index = t.toLowerCase().indexOf(q);
-                    if (index === -1) return t;
 
-                    // Use regex for global case-insensitive replacement if needed, 
-                    // or just a simple split/join for basic matches
-                    const regex = new RegExp(`(${q})`, 'gi');
-                    return t.replace(regex, '<span class="text-blue-600 font-extrabold">$1</span>');
+                    // Priority 1: Exact Substring Match (Bold & Blue)
+                    const index = t.toLowerCase().indexOf(q);
+                    if (index !== -1) {
+                        const regex = new RegExp(`(${q})`, 'gi');
+                        return t.replace(regex, '<span class="text-blue-600 font-extrabold">$1</span>');
+                    }
+
+                    // Priority 2: Fuzzy Match (Highlight individual characters)
+                    // If no substring match, attempt to highlight ordered characters
+                    let result = "";
+                    let qIdx = 0;
+                    for (let i = 0; i < t.length; i++) {
+                        if (qIdx < q.length && t[i].toLowerCase() === q[qIdx]) {
+                            result += `<span class="text-blue-600 font-extrabold">${t[i]}</span>`;
+                            qIdx++;
+                        } else {
+                            result += t[i];
+                        }
+                    }
+                    return qIdx === q.length ? result : t;
+                },
+                fuzzyMatch(text, query) {
+                    if (!query) return true;
+                    if (!text) return false;
+                    let qIdx = 0;
+                    const t = text.toLowerCase();
+                    const q = query.toLowerCase();
+                    for (let i = 0; i < t.length; i++) {
+                        if (t[i] === q[qIdx]) qIdx++;
+                        if (qIdx === q.length) return true;
+                    }
+                    return false;
                 },
                 get filteredStudents() {
                     if (this.search === '') return [];
                     const q = this.search.toString().toLowerCase();
-                    return this.students.filter(s => {
-                        const id = s.id ? s.id.toString().toLowerCase() : '';
-                        // Strip prefixes for search comparison
-                        let searchableName = s.name ? s.name.toString().toLowerCase() : '';
-                        searchableName = searchableName.replace(/^(นาย|นางสาว|นาง)\s?/i, '');
 
-                        return id.includes(q) || searchableName.includes(q);
-                    }).slice(0, 50);
+                    return this.students
+                        .map(s => {
+                            const id = s.id ? s.id.toString().toLowerCase() : '';
+                            let name = s.name ? s.name.toString().toLowerCase() : '';
+                            // Strip prefixes for scoring comparison
+                            name = name.replace(/^(นาย|นางสาว|นาง)\s?/i, '');
+
+                            let score = 0;
+                            if (id === q) score = 100;
+                            else if (id.includes(q)) score = 90;
+                            else if (name === q) score = 80;
+                            else if (name.startsWith(q)) score = 70;
+                            else if (name.includes(q)) score = 60;
+                            else if (this.fuzzyMatch(name, q)) score = 50;
+
+                            return { ...s, score };
+                        })
+                        .filter(s => s.score > 0)
+                        .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'th'))
+                        .slice(0, 50);
                 },
                 selectStudent(student) {
                     this.selectedStudent = student;
