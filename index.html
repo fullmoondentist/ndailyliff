@@ -40,7 +40,7 @@
             opacity: 0.4 !important;
         }
 
-        /* Unified Flatpickr Range Style: Light Blue #dbeafe across all cells & gaps */
+        /* Unified Flatpickr Range Style: Light Blue #dbeafe */
         .flatpickr-day.inRange,
         .flatpickr-day.prevMonthDay.inRange,
         .flatpickr-day.nextMonthDay.inRange,
@@ -48,8 +48,34 @@
         .flatpickr-day.weekend-blocked.inRange {
             background: #dbeafe !important;
             border-color: transparent !important;
-            box-shadow: -5px 0 0 #dbeafe, 5px 0 0 #dbeafe !important;
             border-radius: 0 !important;
+            box-shadow: -5px 0 0 #dbeafe, 5px 0 0 #dbeafe !important;
+        }
+
+        /* Fix Start/End point visuals (Half-circle look) */
+        .flatpickr-day.startRange,
+        .flatpickr-day.endRange {
+            background: #2563eb !important;
+            /* Primary blue for endpoints */
+            color: white !important;
+            border-radius: 50% !important;
+            /* Default circle for single pick */
+        }
+
+        .flatpickr-day.selected.startRange+.inRange,
+        .flatpickr-day.startRange.inRange {
+            border-radius: 50px 0 0 50px !important;
+            box-shadow: 5px 0 0 #dbeafe !important;
+        }
+
+        .flatpickr-day.endRange.inRange {
+            border-radius: 0 50px 50px 0 !important;
+            box-shadow: -5px 0 0 #dbeafe !important;
+        }
+
+        .flatpickr-day.startRange.endRange {
+            border-radius: 50% !important;
+            box-shadow: none !important;
         }
     </style>
 </head>
