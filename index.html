@@ -12,9 +12,7 @@
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.js"></script>
 
     <style>
         ::-webkit-scrollbar {
@@ -145,6 +143,9 @@
         <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-black/50 z-40 backdrop-blur-[2px]"
             @click="closeModal()"></div>
 
+        <!-- Background Overlay for Flatpickr (Fade behind calendar) -->
+        <div x-show="fpOverlay" x-transition.opacity class="fixed inset-0 bg-black/40 z-[55] pointer-events-none"></div>
+
         <!-- Bottom Slide-up Modal -->
         <div x-show="showModal" x-transition:enter="transition transform ease-out duration-300"
             x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
@@ -217,11 +218,8 @@
                                 mode: isRangeMode ? 'range' : 'single',
                                 defaultDate: tempDate,
                                 disableMobile: true,
-                                plugins: [new confirmDatePlugin({
-                                    confirmText: 'OK',
-                                    showAlways: true,
-                                    theme: 'light'
-                                })],
+                                onOpen: () => { fpOverlay = true },
+                                onClose: () => { fpOverlay = false },
                                 onDayCreate: (dObj, dStr, fp, dayElem) => {
                                     if (dayElem.dateObj.getDay() === 0 || dayElem.dateObj.getDay() === 6) {
                                         dayElem.classList.add('weekend-blocked');
@@ -252,7 +250,7 @@
                                 pickerStart.setDate(tempDate, false);
                                 pickerStart.altInput.value = pickerStart.formatDate(pickerStart.selectedDates[0], 'D d M Y');
                             }
-                    ">
+                        ">
                 </div>
 
                 <!-- Range Controls (Compact Switcher & Arrow) -->
@@ -281,8 +279,9 @@
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
                     <div class="w-full p-2 h-12 flex items-center">
-                        <span class="text-slate-700 font-bold text-lg"
-                            x-text="tempEndDate ? formatEngDate(tempEndDate) : 'เลือกวันสิ้นสุด...'"></span>
+                        <span class="text-lg"
+                            :class="tempEndDate ? 'text-slate-700 font-bold' : 'text-blue-500 font-bold animate-pulse'"
+                            x-text="!tempDate ? 'รอกดเลือกวันเริ่ม...' : (!tempEndDate ? '👉 เลือกวันสิ้นสุด...' : formatEngDate(tempEndDate))"></span>
                     </div>
                 </div>
 
@@ -410,6 +409,7 @@
                 pickerEnd: null,
                 selectedPeriods: [],
                 isRangeMode: false,
+                fpOverlay: false,
 
                 config: { strictMode: true },
 
