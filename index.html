@@ -41,11 +41,17 @@
 
         /* Fix Flatpickr range glitch for weekend cells */
         .flatpickr-day.weekend-blocked.inRange {
-            background: #f3f4f6 !important;
-            /* Neutral light gray */
+            background: #dbeafe !important;
+            /* Light blue (Tailwind blue-100) */
             border-color: transparent !important;
             box-shadow: none !important;
             border-radius: 0 !important;
+        }
+
+        /* Ensure general range highlight is also light blue */
+        .flatpickr-day.inRange {
+            background: #dbeafe !important;
+            border-color: transparent !important;
         }
     </style>
 </head>
