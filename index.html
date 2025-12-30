@@ -110,7 +110,7 @@
                                 </span>
                                 <template x-if="student.unit">
                                     <span>
-                                        <i class="fa-solid fa-location-pin mr-1 text-slate-300"></i>
+                                        <i class="fa-solid fa-location-dot mr-1 text-slate-300"></i>
                                         <span x-html="highlight(student.unit, search)"></span>
                                     </span>
                                 </template>
@@ -400,9 +400,9 @@
         if (urlAction === 'find') initialView = 'Find';
 
         // เช็ค Cache ทันที (เพื่อให้ isLoading เป็น false ตั้งแต่ต้น)
-        const cachedData = localStorage.getItem('student_cache_v1');
+        const cachedData = localStorage.getItem('student_cache_v2');
         const cacheTime = localStorage.getItem('student_cache_time');
-        const ONE_DAY = 24 * 60 * 60 * 1000;
+        const ONE_DAY = 6 * 60 * 60 * 1000;
         const hasValidCache = cachedData && cacheTime && (Date.now() - parseInt(cacheTime) < ONE_DAY);
 
         // กำหนดว่าต้องโหลดข้อมูลไหม? (Genlink/Find และไม่มี Cache)
