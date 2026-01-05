@@ -350,9 +350,8 @@
                 </div>
 
                 <!-- Date Input 2 (End Date - Range Mode) -->
-                <div x-show="isRangeMode" @click="dateEndTouched = true; if(pickerStart) pickerStart.open()"
-                    class="bg-slate-50 p-1 rounded-xl border-2 border-slate-100 mb-4 flex items-center cursor-pointer hover:border-blue-300 transition-colors"
-                    :class="!dateEndTouched ? 'animate-heartbeat-blue' : ''">
+                <div x-show="isRangeMode" @click="if(pickerStart) pickerStart.open()"
+                    class="bg-slate-50 p-1 rounded-xl border-2 border-slate-100 mb-4 flex items-center cursor-pointer hover:border-blue-300 transition-colors">
                     <div class="pl-3 pr-2 text-slate-400">
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
@@ -727,6 +726,7 @@
                         this.tempDate = this.formatISO(today);
                         this.tempEndDate = null;
                         this.selectedPeriods = [];
+                        this.dateStartTouched = true;
                         return;
                     }
 
@@ -755,6 +755,8 @@
                     this.tempDate = this.formatISO(start);
                     this.tempEndDate = this.formatISO(end);
                     this.selectedPeriods = [];
+                    this.dateStartTouched = true;
+                    this.dateEndTouched = true;
 
                     // Synchronize with Flatpickr
                     if (this.pickerStart) {
@@ -779,6 +781,7 @@
                 toggleRangeMode() {
                     this.isRangeMode = !this.isRangeMode;
                     this.selectedPeriods = [];
+                    this.dateEndTouched = true; // Stop animation when manually toggling
 
                     // 1. Update mode FIRST
                     if (this.pickerStart) {
