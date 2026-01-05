@@ -219,8 +219,12 @@
 
                 <!-- Quick Range Badges (Horizontal Scrolling) -->
                 <div x-show="view !== 'Genlink'" class="flex flex-nowrap gap-2 mb-6 overflow-x-auto no-scrollbar pb-1">
+                    <button @click="setQuickRange('last_mo')"
+                        class="flex-shrink-0 bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-slate-100 transition-all active:scale-95 whitespace-nowrap">Last
+                        Mo</button>
                     <button @click="setQuickRange('last_2_wks')"
-                        class="flex-shrink-0 bg-red-50 border border-red-100 text-red-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-red-100 transition-all active:scale-95 whitespace-nowrap">2
+                        class="flex-shrink-0 bg-red-50 border border-red-100 text-red-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-red-100 transition-all active:scale-95 whitespace-nowrap">Last
+                        2
                         Wks</button>
                     <button @click="setQuickRange('last_wk')"
                         class="flex-shrink-0 bg-purple-50 border border-purple-100 text-purple-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-purple-100 transition-all active:scale-95 whitespace-nowrap">Last
@@ -232,9 +236,6 @@
                         Wk</button>
                     <button @click="setQuickRange('this_mo')"
                         class="flex-shrink-0 bg-amber-50 border border-amber-100 text-amber-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-amber-100 transition-all active:scale-95 whitespace-nowrap">This
-                        Mo</button>
-                    <button @click="setQuickRange('last_mo')"
-                        class="flex-shrink-0 bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-slate-100 transition-all active:scale-95 whitespace-nowrap">Last
                         Mo</button>
                 </div>
 
