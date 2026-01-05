@@ -55,6 +55,15 @@
         [x-cloak] {
             display: none !important;
         }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 
@@ -208,21 +217,24 @@
                     </button>
                 </div>
 
-                <!-- Quick Range Badges (Tiny & Multi-color) -->
-                <div x-show="view !== 'Genlink'" class="flex flex-wrap gap-2 mb-6">
+                <!-- Quick Range Badges (Horizontal Scrolling) -->
+                <div x-show="view !== 'Genlink'" class="flex flex-nowrap gap-2 mb-6 overflow-x-auto no-scrollbar pb-1">
                     <button @click="setQuickRange('last_2_wks')"
-                        class="bg-red-50 border border-red-100 text-red-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-red-100 transition-all active:scale-95 whitespace-nowrap">2
+                        class="flex-shrink-0 bg-red-50 border border-red-100 text-red-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-red-100 transition-all active:scale-95 whitespace-nowrap">2
                         Wks</button>
                     <button @click="setQuickRange('last_wk')"
-                        class="bg-purple-50 border border-purple-100 text-purple-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-purple-100 transition-all active:scale-95 whitespace-nowrap">Last
+                        class="flex-shrink-0 bg-purple-50 border border-purple-100 text-purple-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-purple-100 transition-all active:scale-95 whitespace-nowrap">Last
                         Wk</button>
                     <button @click="setQuickRange('today')"
-                        class="bg-blue-50 border border-blue-100 text-blue-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-blue-100 transition-all active:scale-95 whitespace-nowrap">Today</button>
+                        class="flex-shrink-0 bg-blue-50 border border-blue-100 text-blue-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-blue-100 transition-all active:scale-95 whitespace-nowrap">Today</button>
                     <button @click="setQuickRange('this_wk')"
-                        class="bg-emerald-50 border border-emerald-100 text-emerald-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-emerald-100 transition-all active:scale-95 whitespace-nowrap">This
+                        class="flex-shrink-0 bg-emerald-50 border border-emerald-100 text-emerald-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-emerald-100 transition-all active:scale-95 whitespace-nowrap">This
                         Wk</button>
                     <button @click="setQuickRange('this_mo')"
-                        class="bg-amber-50 border border-amber-100 text-amber-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-amber-100 transition-all active:scale-95 whitespace-nowrap">This
+                        class="flex-shrink-0 bg-amber-50 border border-amber-100 text-amber-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-amber-100 transition-all active:scale-95 whitespace-nowrap">This
+                        Mo</button>
+                    <button @click="setQuickRange('last_mo')"
+                        class="flex-shrink-0 bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-slate-100 transition-all active:scale-95 whitespace-nowrap">Last
                         Mo</button>
                 </div>
 
@@ -682,6 +694,9 @@
                     } else if (type === 'this_mo') {
                         start = new Date(today.getFullYear(), today.getMonth(), 1);
                         end = new Date(today);
+                    } else if (type === 'last_mo') {
+                        start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                        end = new Date(today.getFullYear(), today.getMonth(), 0);
                     }
 
                     this.isRangeMode = true;
