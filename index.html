@@ -64,6 +64,15 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        .faded-edge {
+            -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+            mask-image: linear-gradient(to right, black 80%, transparent 100%);
+        }
+
+        .momentum-scroll {
+            -webkit-overflow-scrolling: touch;
+        }
     </style>
 </head>
 
@@ -217,8 +226,9 @@
                     </button>
                 </div>
 
-                <!-- Quick Range Badges (Horizontal Scrolling) -->
-                <div x-show="view !== 'Genlink'" class="flex flex-nowrap gap-2 mb-6 overflow-x-auto no-scrollbar pb-1">
+                <!-- Quick Range Badges (Horizontal Scrolling + Faded Edge UX) -->
+                <div x-show="view !== 'Genlink'"
+                    class="flex flex-nowrap gap-2 mb-6 overflow-x-auto no-scrollbar momentum-scroll faded-edge pb-1 pr-12">
                     <button @click="setQuickRange('last_mo')"
                         class="flex-shrink-0 bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-slate-100 transition-all active:scale-95 whitespace-nowrap">Last
                         Mo</button>
