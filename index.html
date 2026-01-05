@@ -77,8 +77,8 @@
             }
 
             50% {
-                border-color: rgba(37, 99, 235, 0.8);
-                box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+                border-color: rgba(37, 99, 235, 0.6);
+                box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
             }
 
             100% {
@@ -126,8 +126,9 @@
                         <div class="relative">
                             <i class="fa-solid fa-font absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                             <input type="text" x-model="search" placeholder="พิมพ์บางส่วนของชื่อ, Unit, ID"
+                                @focus="searchTouched = true" @input="searchTouched = true"
                                 class="w-full pl-11 pr-10 py-3 rounded-xl bg-slate-100 border-2 border-transparent focus:ring-2 focus:ring-blue-500 text-slate-800 text-lg transition-all"
-                                :class="search === '' ? 'animate-heartbeat-blue' : 'border-slate-100'">
+                                :class="(search === '' && !searchTouched) ? 'animate-heartbeat-blue' : 'border-slate-100'">
                             <button x-show="search.length > 0" @click="search = ''"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 p-1">
                                 <i class="fa-solid fa-circle-xmark"></i>
@@ -272,8 +273,9 @@
 
 
                 <!-- Date Input 1 (Start Date) -->
-                <div class="bg-slate-50 p-1 rounded-xl border-2 border-slate-100 mb-4 flex items-center cursor-pointer hover:border-blue-300 transition-colors animate-heartbeat-blue"
-                    @click="if(pickerStart) pickerStart.open()">
+                <div class="bg-slate-50 p-1 rounded-xl border-2 border-slate-100 mb-4 flex items-center cursor-pointer hover:border-blue-300 transition-colors"
+                    :class="!dateStartTouched ? 'animate-heartbeat-blue' : ''"
+                    @click="dateStartTouched = true; if(pickerStart) pickerStart.open()">
                     <div class="pl-3 pr-2 text-slate-400">
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
@@ -348,8 +350,9 @@
                 </div>
 
                 <!-- Date Input 2 (End Date - Range Mode) -->
-                <div x-show="isRangeMode" @click="if(pickerStart) pickerStart.open()"
-                    class="bg-slate-50 p-1 rounded-xl border-2 border-slate-100 mb-4 flex items-center cursor-pointer hover:border-blue-300 transition-colors animate-heartbeat-blue">
+                <div x-show="isRangeMode" @click="dateEndTouched = true; if(pickerStart) pickerStart.open()"
+                    class="bg-slate-50 p-1 rounded-xl border-2 border-slate-100 mb-4 flex items-center cursor-pointer hover:border-blue-300 transition-colors"
+                    :class="!dateEndTouched ? 'animate-heartbeat-blue' : ''">
                     <div class="pl-3 pr-2 text-slate-400">
                         <i class="fa-regular fa-calendar-days text-lg"></i>
                     </div>
@@ -487,6 +490,11 @@
                 fpOverlay: false,
 
                 config: { strictMode: true },
+
+                // Interaction States
+                searchTouched: false,
+                dateStartTouched: false,
+                dateEndTouched: false,
 
                 clinicSchedule: {
                     "Monday": ["Morning", "Afternoon"],
@@ -676,6 +684,8 @@
                 selectStudent(student) {
                     this.selectedStudent = student;
                     this.resetForm();
+                    this.dateStartTouched = false;
+                    this.dateEndTouched = false;
                     this.showModal = true;
                     this.autoSelectPeriod(this.tempDate);
                 },
