@@ -510,13 +510,15 @@
                 ],
 
                 initApp() {
-                    // Auto-center badges when modal opens
+                    // Auto-center badges when modal opens (center between Last Wk and Today)
                     this.$watch('showModal', value => {
                         if (value && this.view !== 'Genlink') {
                             this.$nextTick(() => {
                                 const container = this.$refs.badgeContainer;
                                 if (container) {
-                                    container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+                                    // Center between Last Wk (3rd) and Today (4th) badge
+                                    const scrollableWidth = container.scrollWidth - container.clientWidth;
+                                    container.scrollLeft = scrollableWidth * 0.35;
                                 }
                             });
                         }
