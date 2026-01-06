@@ -65,9 +65,19 @@
             scrollbar-width: none;
         }
 
-        .faded-edge {
-            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
-            mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+        .faded-edge-right {
+            -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+            mask-image: linear-gradient(to right, black 80%, transparent 100%);
+        }
+
+        .faded-edge-left {
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%);
+            mask-image: linear-gradient(to right, transparent 0%, black 20%);
+        }
+
+        .faded-edge-both {
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
         }
 
         @keyframes heartbeat-blue {
@@ -246,9 +256,10 @@
                     </button>
                 </div>
 
-                <!-- Quick Range Badges (Horizontal Scrolling + Double Faded Edge UX) -->
-                <div x-show="view !== 'Genlink'" x-ref="badgeContainer"
-                    class="flex flex-nowrap gap-2 mb-6 overflow-x-auto no-scrollbar faded-edge pb-1 pr-12">
+                <!-- Quick Range Badges (Dynamic Horizontal Scrolling UX) -->
+                <div x-show="view !== 'Genlink'" x-ref="badgeContainer" @scroll="updateScrollState"
+                    class="flex flex-nowrap gap-2 mb-6 overflow-x-auto no-scrollbar pb-1 pr-12 transition-all"
+                    :class="getFadeClass()">
                     <button @click="setQuickRange('last_mo')"
                         class="flex-shrink-0 bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-slate-100 transition-all active:scale-95 whitespace-nowrap">Last
                         Mo</button>
@@ -495,6 +506,10 @@
                 dateStartTouched: false,
                 dateEndTouched: false,
 
+                // Scroll States
+                scrollPos: 0,
+                maxScroll: 0,
+
                 clinicSchedule: {
                     "Monday": ["Morning", "Afternoon"],
                     "Tuesday": ["Afternoon", "Evening"],
@@ -510,15 +525,10 @@
                 ],
 
                 initApp() {
-                    // Auto-center badges when modal opens
+                    // Update initial scroll state for badges
                     this.$watch('showModal', value => {
                         if (value && this.view !== 'Genlink') {
-                            this.$nextTick(() => {
-                                const container = this.$refs.badgeContainer;
-                                if (container) {
-                                    container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
-                                }
-                            });
+                            this.$nextTick(() => this.updateScrollState());
                         }
                     });
 
@@ -777,6 +787,22 @@
                         this.tempEndDate = null;
                         this.autoSelectPeriod(this.tempDate);
                     }
+                },
+                updateScrollState() {
+                    const el = this.$refs.badgeContainer;
+                    if (el) {
+                        this.scrollPos = el.scrollLeft;
+                        this.maxScroll = el.scrollWidth - el.clientWidth;
+                    }
+                },
+                getFadeClass() {
+                    if (this.maxScroll <= 0) return '';
+                    const atStart = this.scrollPos <= 5;
+                    const atEnd = this.scrollPos >= this.maxScroll - 5;
+
+                    if (atStart) return 'faded-edge-right';
+                    if (atEnd) return 'faded-edge-left';
+                    return 'faded-edge-both';
                 },
                 toggleRangeMode() {
                     this.isRangeMode = !this.isRangeMode;
