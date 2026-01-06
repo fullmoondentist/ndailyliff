@@ -510,17 +510,17 @@
                 ],
 
                 initApp() {
-                    // Auto-center badges when modal opens (center between Last Wk and Today)
+                    // Auto-center badges when modal opens
                     this.$watch('showModal', value => {
                         if (value && this.view !== 'Genlink') {
-                            this.$nextTick(() => {
+                            // Use setTimeout instead of nextTick to ensure layout is ready after transition starts
+                            setTimeout(() => {
                                 const container = this.$refs.badgeContainer;
                                 if (container) {
-                                    // Center between Last Wk (3rd) and Today (4th) badge
-                                    const scrollableWidth = container.scrollWidth - container.clientWidth;
-                                    container.scrollLeft = scrollableWidth * 0.5;
+                                    // Exactly center the entire content
+                                    container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
                                 }
-                            });
+                            }, 100);
                         }
                     });
 
