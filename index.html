@@ -530,7 +530,7 @@
                         if (value && this.view !== 'Genlink') {
                             // Use setTimeout to ensure container is fully rendered for width calculation
                             this.$nextTick(() => {
-                                setTimeout(() => this.updateScrollState(), 100);
+                                setTimeout(() => this.updateScrollState(), 350);
                             });
                         }
                     });
