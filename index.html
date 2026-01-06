@@ -248,7 +248,7 @@
 
                 <!-- Quick Range Badges (Horizontal Scrolling + Double Faded Edge UX) -->
                 <div x-show="view !== 'Genlink'" x-ref="badgeContainer"
-                    class="flex flex-nowrap gap-2 mb-6 overflow-x-auto no-scrollbar faded-edge pb-1 pr-12">
+                    class="flex flex-nowrap gap-2 mb-6 overflow-x-auto no-scrollbar faded-edge pb-1 px-6">
                     <button @click="setQuickRange('last_mo')"
                         class="flex-shrink-0 bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-slate-100 transition-all active:scale-95 whitespace-nowrap">Last
                         Mo</button>
@@ -259,6 +259,10 @@
                     <button @click="setQuickRange('last_wk')"
                         class="flex-shrink-0 bg-purple-50 border border-purple-100 text-purple-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-purple-100 transition-all active:scale-95 whitespace-nowrap">Last
                         Wk</button>
+
+                    <!-- Invisible anchor for perfect centering -->
+                    <div x-ref="badgeAnchor" class="w-0 flex-shrink-0"></div>
+
                     <button @click="setQuickRange('today')"
                         class="flex-shrink-0 bg-blue-50 border border-blue-100 text-blue-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-blue-100 transition-all active:scale-95 whitespace-nowrap">Today</button>
                     <button @click="setQuickRange('this_wk')"
@@ -513,12 +517,12 @@
                     // Auto-center badges when modal opens
                     this.$watch('showModal', value => {
                         if (value && this.view !== 'Genlink') {
-                            this.$nextTick(() => {
-                                const container = this.$refs.badgeContainer;
-                                if (container) {
-                                    container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+                            setTimeout(() => {
+                                const anchor = this.$refs.badgeAnchor;
+                                if (anchor) {
+                                    anchor.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
                                 }
-                            });
+                            }, 100);
                         }
                     });
 
