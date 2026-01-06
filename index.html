@@ -135,9 +135,8 @@
 
                         <div class="relative">
                             <i class="fa-solid fa-font absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" x-model="search" x-ref="searchInput"
-                                placeholder="พิมพ์บางส่วนของชื่อ, Unit, ID" @focus="searchTouched = true"
-                                @input="searchTouched = true"
+                            <input type="text" x-model="search" placeholder="พิมพ์บางส่วนของชื่อ, Unit, ID"
+                                @focus="searchTouched = true" @input="searchTouched = true"
                                 class="w-full pl-11 pr-10 py-3 rounded-xl bg-slate-100 border-2 border-transparent focus:ring-2 focus:ring-blue-500 text-slate-800 text-lg transition-all"
                                 :class="(search === '' && !searchTouched) ? 'animate-heartbeat-blue' : 'border-slate-100'">
                             <button x-show="search.length > 0" @click="search = ''"
@@ -533,29 +532,6 @@
                             this.$nextTick(() => this.updateScrollState());
                         }
                     });
-
-                    // Auto-focus search input when loading finishes or view changes to searchable
-                    this.$watch('isLoading', value => {
-                        if (!value && (this.view === 'Genlink' || this.view === 'Find')) {
-                            this.$nextTick(() => {
-                                setTimeout(() => { if (this.$refs.searchInput) this.$refs.searchInput.focus(); }, 300);
-                            });
-                        }
-                    });
-                    this.$watch('view', value => {
-                        if ((value === 'Genlink' || value === 'Find') && !this.isLoading) {
-                            this.$nextTick(() => {
-                                setTimeout(() => { if (this.$refs.searchInput) this.$refs.searchInput.focus(); }, 300);
-                            });
-                        }
-                    });
-
-                    // Trigger initial focus if already loaded and in searchable view
-                    if (!this.isLoading && (this.view === 'Genlink' || this.view === 'Find')) {
-                        this.$nextTick(() => {
-                            setTimeout(() => { if (this.$refs.searchInput) this.$refs.searchInput.focus(); }, 500);
-                        });
-                    }
 
                     // ไม่ต้องอ่าน URL ซ้ำแล้ว ใช้ค่า initialView ได้เลย
                     this.tempDate = this.getInitialWorkingDate();
