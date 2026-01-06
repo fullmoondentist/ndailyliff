@@ -259,7 +259,7 @@
                 <!-- Quick Range Badges (Dynamic Horizontal Scrolling UX) -->
                 <div x-show="view !== 'Genlink'" x-ref="badgeContainer" @scroll="updateScrollState"
                     x-init="new ResizeObserver(() => updateScrollState()).observe($el)"
-                    class="flex flex-nowrap gap-2 mb-6 overflow-x-auto no-scrollbar pb-1 px-4 transition-all"
+                    class="flex flex-nowrap gap-2 mb-6 overflow-x-auto no-scrollbar pb-1 transition-all"
                     :class="getFadeClass()">
                     <button @click="setQuickRange('last_mo')"
                         class="flex-shrink-0 bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium px-2 py-0.5 rounded-full hover:bg-slate-100 transition-all active:scale-95 whitespace-nowrap">Last
