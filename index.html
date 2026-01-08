@@ -606,6 +606,14 @@
                 },
 
                 // --- ส่วน Logic อื่นๆ เหมือนเดิม ---
+
+                // ฟังก์ชันตัดสระภาษาไทย เหลือแต่พยัญชนะ
+                thaiConsonantOnly(text) {
+                    if (!text) return '';
+                    const consonants = 'กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ';
+                    return text.split('').filter(c => consonants.includes(c)).join('');
+                },
+
                 highlight(text, query) {
                     if (!query || !text) return text;
                     const q = query.toString().toLowerCase();
@@ -649,6 +657,8 @@
                         return queryPointer === q.length ? prefix + resultPart : t;
                     }
                 },
+
+                // Fuzzy Match แบบเดิม (เก็บไว้ใช้ในบางกรณี)
                 fuzzyMatch(text, query) {
                     if (!query) return true;
                     if (!text) return false;
@@ -661,6 +671,49 @@
                         if (qIdx === query.length) return true;
                     }
                     return false;
+                },
+
+                // Fuzzy Match แบบใหม่ที่คำนวณคะแนนตามระยะห่างของพยัญชนะ
+                fuzzyMatchWithScore(text, query) {
+                    if (!query) return { match: true, score: 0 };
+                    if (!text) return { match: false, score: 0 };
+
+                    const searchable = text.toLowerCase().replace(/^(นาย|นางสาว|นาง)\s?/i, '');
+
+                    // ตัดสระออกทั้งคู่เพื่อเปรียบเทียบเฉพาะพยัญชนะ
+                    const textCons = this.thaiConsonantOnly(searchable);
+                    const queryCons = this.thaiConsonantOnly(query.toLowerCase());
+
+                    let qIdx = 0;
+                    let lastMatchPos = -1;
+                    let totalDistance = 0;
+                    let consecutiveCount = 0;
+
+                    for (let i = 0; i < textCons.length; i++) {
+                        if (textCons[i] === queryCons[qIdx]) {
+                            if (lastMatchPos !== -1) {
+                                const distance = i - lastMatchPos - 1;
+                                totalDistance += distance;
+                                if (distance === 0) consecutiveCount++; // พยัญชนะติดกัน
+                            }
+                            lastMatchPos = i;
+                            qIdx++;
+
+                            if (qIdx === queryCons.length) {
+                                // คำนวณคะแนน
+                                const baseScore = 50;
+                                const distancePenalty = Math.min(totalDistance * 3, 25); // ลดสูงสุด 25 คะแนน
+                                const consecutiveBonus = consecutiveCount * 5; // +5 ต่อคู่ที่ติดกัน
+                                const finalScore = baseScore - distancePenalty + consecutiveBonus;
+
+                                return {
+                                    match: true,
+                                    score: Math.max(finalScore, 15) // คะแนนต่ำสุด 15
+                                };
+                            }
+                        }
+                    }
+                    return { match: false, score: 0 };
                 },
                 get filteredStudents() {
                     if (this.search === '') return [];
@@ -675,6 +728,8 @@
                             name = name.replace(/^(นาย|นางสาว|นาง)\s?/i, '');
 
                             let score = 0;
+
+                            // คะแนนแบบเดิม (มีความแม่นยำสูง - Exact Match)
                             if (id === q) score = 100;
                             else if (id.includes(q)) score = 90;
                             else if (unit === q) score = 85;
@@ -682,8 +737,19 @@
                             else if (name === q) score = 75;
                             else if (name.startsWith(q)) score = 70;
                             else if (name.includes(q)) score = 60;
-                            else if (this.fuzzyMatch(name, q)) score = 50;
-                            else if (this.fuzzyMatch(unit, q)) score = 40;
+                            else {
+                                // ใช้ Fuzzy Match แบบใหม่ที่มี Distance Score
+                                const nameFuzzy = this.fuzzyMatchWithScore(name, q);
+                                if (nameFuzzy.match) {
+                                    score = nameFuzzy.score;
+                                } else {
+                                    // ลองค้นหาในหน่วยงาน
+                                    const unitFuzzy = this.fuzzyMatchWithScore(unit, q);
+                                    if (unitFuzzy.match) {
+                                        score = unitFuzzy.score - 10; // ลดคะแนนถ้าตรงที่หน่วยงาน
+                                    }
+                                }
+                            }
 
                             return { ...s, score };
                         })
