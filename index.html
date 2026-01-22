@@ -168,8 +168,8 @@
                         <div class="relative flex-shrink-0">
                             <img :src="`https://dsthitdlxklynbpvuxsh.supabase.co/storage/v1/object/public/student-photos/${student.id}.webp`"
                                 @error="$el.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(student.name) + '&background=random&color=fff&rounded=true'"
-                                class="w-12 h-12 rounded-full object-cover object-top border-2 border-slate-50 shadow-sm"
-                                alt="Avatar">
+                                class="w-12 h-12 rounded-full object-cover border-2 border-slate-50 shadow-sm"
+                                style="object-position: 50% 15%;" alt="Avatar">
                         </div>
 
                         <div class="flex-1 min-w-0">
