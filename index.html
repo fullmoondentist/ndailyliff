@@ -165,11 +165,17 @@
                         class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 active:scale-[0.98] transition-transform flex items-center gap-4 cursor-pointer group hover:border-blue-300">
 
                         <!-- Circular Avatar -->
-                        <div class="relative flex-shrink-0">
-                            <img :src="`https://dsthitdlxklynbpvuxsh.supabase.co/storage/v1/object/public/student-photos/${student.id}.webp`"
-                                @error="$el.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(student.name) + '&background=random&color=fff&rounded=true'"
-                                class="w-12 h-12 rounded-full object-cover border-2 border-slate-50 shadow-sm"
-                                style="object-position: 50% 15%;" alt="Avatar">
+                        <div class="relative flex-shrink-0 group/avatar">
+                            <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-slate-50 shadow-sm transition-transform active:scale-90"
+                                @click.stop="previewImage = `https://dsthitdlxklynbpvuxsh.supabase.co/storage/v1/object/public/student-photos/${student.id}.webp` ">
+                                <img :src="`https://dsthitdlxklynbpvuxsh.supabase.co/storage/v1/object/public/student-photos/${student.id}.webp`"
+                                    @error="$el.style.display = 'none'; $el.nextElementSibling.style.display = 'flex'"
+                                    class="w-full h-full object-cover" style="object-position: 50% 15%;" alt="Avatar">
+                                <div
+                                    class="hidden w-full h-full bg-slate-100 items-center justify-center text-slate-300">
+                                    <i class="fa-solid fa-user text-xl"></i>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="flex-1 min-w-0">
@@ -222,6 +228,16 @@
         <!-- Background Overlay for Modal -->
         <div x-show="showModal" x-transition.opacity class="fixed inset-0 bg-black/50 z-40 backdrop-blur-[2px]"
             @click="closeModal()"></div>
+
+        <!-- Image Preview Fullscreen Modal -->
+        <div x-show="previewImage" x-transition.opacity
+            class="fixed inset-0 bg-black/95 z-[100] flex items-center justify-center p-4" @click="previewImage = null">
+            <button class="absolute top-6 right-6 text-white text-3xl p-2">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <img :src="previewImage" class="max-w-full max-h-full rounded-2xl shadow-2xl" @click.stop=""
+                style="object-position: 50% 15%;">
+        </div>
 
         <!-- Background Overlay for Flatpickr (Fade behind calendar) -->
         <div x-show="fpOverlay" x-transition.opacity
@@ -497,6 +513,7 @@
                 // 2. ยัดค่าเริ่มต้นใส่ตัวแปรเลย (เปิดมาปุ๊บ เป็นหน้านั้นปั๊บ ไม่กระพริบ)
                 view: initialView,
                 isLoading: initialLoading,
+                previewImage: null,
 
                 search: '',
                 students: initialStudents,
