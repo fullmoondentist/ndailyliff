@@ -162,24 +162,33 @@
 
                 <template x-for="student in filteredStudents" :key="student.id">
                     <div @click="selectStudent(student)"
-                        class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 active:scale-[0.98] transition-transform flex justify-between items-center cursor-pointer group hover:border-blue-300">
-                        <div>
-                            <div class="font-bold text-slate-800 text-lg group-hover:text-blue-700"
+                        class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 active:scale-[0.98] transition-transform flex items-center gap-4 cursor-pointer group hover:border-blue-300">
+
+                        <!-- Circular Avatar -->
+                        <div class="relative flex-shrink-0">
+                            <img :src="`https://dsthitdlxklynbpvuxsh.supabase.co/storage/v1/object/public/student-photos/${student.id}.webp`"
+                                @error="$el.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(student.name) + '&background=random&color=fff&rounded=true'"
+                                class="w-12 h-12 rounded-full object-cover border-2 border-slate-50 shadow-sm"
+                                alt="Avatar">
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <div class="font-bold text-slate-800 text-lg group-hover:text-blue-700 truncate"
                                 x-html="highlight(student.name, search)"></div>
-                            <div class="text-slate-500 text-sm mt-1 flex items-center gap-3">
+                            <div class="text-slate-500 text-sm mt-0.5 flex items-center gap-3">
                                 <span>
                                     <i class="fa-regular fa-id-card mr-1 text-slate-300"></i>
                                     <span x-html="highlight(student.id, search)"></span>
                                 </span>
                                 <template x-if="student.unit">
-                                    <span>
+                                    <span class="truncate">
                                         <i class="fa-solid fa-location-dot mr-1 text-slate-300"></i>
                                         <span x-html="highlight(student.unit, search)"></span>
                                     </span>
                                 </template>
                             </div>
                         </div>
-                        <i class="fa-solid fa-chevron-right text-slate-200"></i>
+                        <i class="fa-solid fa-chevron-right text-slate-200 flex-shrink-0"></i>
                     </div>
                 </template>
 
